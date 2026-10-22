@@ -7,7 +7,7 @@ import { ALL_FILTER } from '../lib/deck';
 import { getProgress, resetProgress, STORAGE_KEY, summarize } from '../lib/progress';
 import { ChooseMethod } from '../modules/ChooseMethod';
 import { Dashboard } from '../modules/Dashboard';
-import { Exercise } from '../modules/Decode';
+import { Exercise } from '../components/Exercise';
 import { Recognize } from '../modules/Recognize';
 
 beforeEach(() => {

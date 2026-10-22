@@ -5,6 +5,7 @@
  * A question without an entry in VERIFY fails the suite.
  */
 import { QUESTIONS } from '../data/questions';
+import { ENROLLMENT } from '../data/questions/phase2';
 import type { QCAnswer, Question } from '../data/types';
 
 const EPS = 1e-9;
@@ -220,6 +221,107 @@ const VERIFY: Record<string, () => Check | QCAnswer> = {
     const max = Math.max(...sds);
     if (sds.filter((v) => near(v, max)).length !== 1) throw new Error('tie for greatest SD');
     return { value: sds.indexOf(max), choiceValues: [0, 1, 2, 3, 4] };
+  },
+  // ---------- Phase 2 ----------
+  'p2-sign-qc': () => {
+    const pairs: [number, number][] = [];
+    for (const x of range(-10, 10, 0.5)) for (const y of range(-10, 10, 0.5)) if (x * y < 0 && y > 0) pairs.push([x, 0]);
+    return { qc: qcRelation(pairs) };
+  },
+  'p2-fraction-ops': () => ({ value: ((3 / 4) * (8 / 9)) / (2 / 3), choiceValues: [1 / 2, 2 / 3, 1, 4 / 3, 3 / 2] }),
+  'p2-decimal-divide': () => ({ value: 0.0042 / 0.006 }),
+  'p2-divisible-digit': () => {
+    const digits = [1, 2, 5, 7, 8];
+    return { multi: digits.map((d, i) => ((3502 + 10 * d) % 12 === 0 ? i : -1)).filter((i) => i >= 0) };
+  },
+  'p2-root-add': () => ({ value: Math.sqrt(48) + Math.sqrt(27), choiceValues: [5 * Math.sqrt(3), 7 * Math.sqrt(3), 7 * Math.sqrt(6), 12 * Math.sqrt(3), 75] }),
+  'p2-abs-qc': () => ({ qc: qcRelation(range(-30, 30, 0.5).filter((x) => near(Math.abs(x - 2), 5)).map((x) => [x, 0])) }),
+  'p2-avg-speed': () => ({ value: 60 / (30 / 15 + 30 / 10) }),
+  'p2-work-together': () => ({ value: 1 / (1 / 4 + 1 / 6) }),
+  'p2-equivalent-expr': () => {
+    const orig = (x: number) => 2 * (x - 3) - (x - 5);
+    const fs = [(x: number) => x - 1, (x: number) => x - 11, (x: number) => -1 + x, (x: number) => 2 * x - 6 - x + 5, (x: number) => x + 1];
+    const xs = range(-20, 20, 0.7);
+    return { multi: fs.map((f, i) => (xs.every((x) => near(f(x), orig(x))) ? i : -1)).filter((i) => i >= 0) };
+  },
+  'p2-alg-fraction': () => {
+    const orig = (x: number) => (x * x - 4) / (x * x + 4 * x + 4);
+    const fs = [(x: number) => (x - 2) / (x + 2), () => -1, (x: number) => (x + 2) / (x - 2), () => 1, (x: number) => -4 / (4 * x + 4)];
+    const xs = range(-9.7, 9.7, 0.37).filter((x) => Math.abs(x + 2) > 1e-6 && Math.abs(x - 2) > 1e-6 && Math.abs(x + 1) > 1e-6);
+    const ok = fs.map((f, i) => (xs.every((x) => near(f(x), orig(x))) ? i : -1)).filter((i) => i >= 0);
+    if (ok.length !== 1) throw new Error('expected exactly one equivalent choice');
+    return { value: ok[0], choiceValues: [0, 1, 2, 3, 4] };
+  },
+  'p2-function-compose': () => {
+    const f = (x: number) => 2 * x - 1;
+    const g = (x: number) => x * x;
+    return { value: f(g(3)) };
+  },
+  'p2-symbol-function': () => {
+    const d = (a: number, b: number) => a * b - a + b;
+    return { value: d(3, d(2, 4)) };
+  },
+  'p2-midpoint': () => ({ value: (-3 + 7) / 2 + (8 + -2) / 2 }),
+  'p2-parallel-angles': () => ({ value: range(0, 100, 0.5).filter((x) => near(3 * x + 10 + (2 * x + 20), 180))[0] }),
+  'p2-octagon-angle': () => ({ value: ((8 - 2) * 180) / 8 }),
+  'p2-rect-area-qc': () => ({ qc: qcRelation(range(0.01, 9.99, 0.01).map((l) => [l * (10 - l), 25])) }),
+  'p2-trapezoid': () => ({ value: ((8 + 14) / 2) * 5 }),
+  'p2-cylinder': () => ({ value: Math.PI * 3 * 3 * 8, choiceValues: [24, 48, 72, 144, 192].map((k) => k * Math.PI) }),
+  'p2-equilateral-perimeter': () => {
+    const sides = range(0.5, 50, 0.5).filter((s) => near((s * Math.sqrt(3)) / 2, 6 * Math.sqrt(3)));
+    return { value: 3 * sides[0] };
+  },
+  'p2-weighted-average': () => ({ value: (15 * 80 + 10 * 90) / 25 }),
+  'p2-weighted-qc': () => ({ qc: qcRelation([[(30 * 60 + 10 * 80) / 40, 70]]) }),
+  'p2-pair-together': () => {
+    const people = [0, 1, 2, 3, 4]; // 0 = Ann, 1 = Ben
+    let count = 0;
+    const permute = (rest: number[], acc: number[]) => {
+      if (!rest.length) {
+        if (Math.abs(acc.indexOf(0) - acc.indexOf(1)) === 1) count++;
+        return;
+      }
+      rest.forEach((p, i) => permute([...rest.slice(0, i), ...rest.slice(i + 1)], [...acc, p]));
+    };
+    permute(people, []);
+    return { value: count };
+  },
+  'p2-code-count': () => {
+    let n = 0;
+    for (let a = 0; a < 10; a++) for (let b = 0; b < 10; b++) for (let c = 0; c < 3; c++) if (a !== b) n++;
+    return { value: n };
+  },
+  'p2-venn': () => {
+    // Build explicit sets for each candidate overlap and check the counts.
+    const ok = range(0, 45).filter((both) => {
+      const spanishOnly = 70 - both;
+      const frenchOnly = 45 - both;
+      return spanishOnly >= 0 && spanishOnly + frenchOnly + both + 20 === 120;
+    });
+    if (ok.length !== 1) throw new Error('overlap not unique');
+    return { value: ok[0] };
+  },
+  'p2-table-percent': () => {
+    const changes = ENROLLMENT.rows.map((row) => Math.abs((Number(row[2]) - Number(row[1])) / Number(row[1])));
+    const max = Math.max(...changes);
+    if (changes.filter((c) => near(c, max)).length !== 1) throw new Error('tie for greatest percent change');
+    const name = ENROLLMENT.rows[changes.indexOf(max)][0];
+    const choiceIndex = ['Biology', 'Chemistry', 'Physics'].indexOf(String(name));
+    return { value: choiceIndex, choiceValues: [0, 1, 2, 3, 4] };
+  },
+  'p2-table-total': () => ({ value: ENROLLMENT.rows.reduce((s, row) => s + Number(row[2]) - Number(row[1]), 0) }),
+  'p2-consecutive-odd': () => {
+    const starts = range(-99, 99).filter((n) => Math.abs(n % 2) === 1 && [0, 2, 4, 6, 8].reduce((s, k) => s + n + k, 0) === 85);
+    return { value: starts[0] + 8 };
+  },
+  'p2-sd-transform-qc': () => {
+    const sets = [
+      [0, 10],
+      [-5, 5, -5, 5],
+      [20, 30],
+    ].map((set) => set.map((v) => v));
+    for (const set of sets) if (!near(sd(set), 5)) throw new Error('base set must have SD 5');
+    return { qc: qcRelation(sets.map((set) => [sd(set.map((v) => 2 * v + 3)), 10])) };
   },
 };
 

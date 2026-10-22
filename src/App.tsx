@@ -3,6 +3,12 @@ import { CATEGORY_IDS } from './data/taxonomy';
 import type { Category } from './data/types';
 import { ALL_FILTER, type DeckFilter } from './lib/deck';
 import { ChooseMethod } from './modules/ChooseMethod';
+import { Clues } from './modules/Clues';
+import { Flashcards } from './modules/Flashcards';
+import { Formulas } from './modules/Formulas';
+import { Library } from './modules/Library';
+import { Practice } from './modules/Practice';
+import { Vault } from './modules/Vault';
 import { Dashboard } from './modules/Dashboard';
 import { Decode } from './modules/Decode';
 import { Recognize } from './modules/Recognize';
@@ -25,12 +31,17 @@ function filterFrom(params: URLSearchParams): DeckFilter {
 }
 
 const NAV = [
-  { href: '#/', path: '/', label: 'Dashboard' },
-  { href: '#/recognize', path: '/recognize', label: 'Recognize' },
-  { href: '#/decode', path: '/decode', label: 'Decode' },
-  { href: '#/method', path: '/method', label: 'Fastest Way' },
-  { href: '#/shortcut', path: '/shortcut', label: 'Shortcuts' },
+  { href: '#/', path: '/', label: 'Home' },
+  { href: '#/library', path: '/library', label: 'Library' },
+  { href: '#/practice', path: '/practice', label: 'Practice' },
+  { href: '#/vault', path: '/vault', label: 'Vault' },
+  { href: '#/formulas', path: '/formulas', label: 'Formulas' },
+  { href: '#/clues', path: '/clues', label: 'Clues' },
+  { href: '#/flashcards', path: '/flashcards', label: 'Flashcards' },
 ];
+
+/** Phase 1 trainers live under Practice in the nav. */
+const PRACTICE_PATHS = ['/practice', '/recognize', '/decode', '/method', '/shortcut'];
 
 export function App() {
   const [route, setRoute] = useState(parseHash);
@@ -44,8 +55,10 @@ export function App() {
   }, []);
 
   const routeKey = route.path + '?' + route.params.toString();
+  const [, section, id] = route.path.split('/');
+  const base = `/${section ?? ''}`;
   let view;
-  switch (route.path) {
+  switch (base) {
     case '/recognize':
       view = <Recognize key={routeKey} initialFilter={filterFrom(route.params)} initialMode={route.params.get('mode') === 'first' ? 'first' : 'type'} />;
       break;
@@ -58,9 +71,28 @@ export function App() {
     case '/shortcut':
       view = <ShortcutVsTraditional key={routeKey} initialFilter={filterFrom(route.params)} />;
       break;
+    case '/library':
+      view = <Library key={routeKey} lessonId={id} section={route.params.get('section') ?? undefined} />;
+      break;
+    case '/vault':
+      view = <Vault key={routeKey} shortcutId={id} practice={route.params.get('practice') === '1'} />;
+      break;
+    case '/formulas':
+      view = <Formulas key={routeKey} formulaId={id} />;
+      break;
+    case '/clues':
+      view = <Clues key={routeKey} />;
+      break;
+    case '/flashcards':
+      view = <Flashcards key={routeKey} />;
+      break;
+    case '/practice':
+      view = <Practice key={routeKey} lesson={route.params.get('lesson') ?? undefined} mode={route.params.get('mode') ?? undefined} level={route.params.get('level') ?? undefined} />;
+      break;
     default:
       view = <Dashboard />;
   }
+  const activeNav = PRACTICE_PATHS.includes(base) ? '/practice' : base;
 
   return (
     <div className="app">
@@ -73,14 +105,14 @@ export function App() {
         </a>
         <nav className="nav" aria-label="Main">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} className={route.path === n.path ? 'active' : ''} aria-current={route.path === n.path ? 'page' : undefined}>
+            <a key={n.href} href={n.href} className={activeNav === n.path ? 'active' : ''} aria-current={activeNav === n.path ? 'page' : undefined}>
               {n.label}
             </a>
           ))}
         </nav>
       </header>
       <main className="main">{view}</main>
-      <footer className="footer">Original GRE-style practice questions. Every answer key is verified by automated tests. Progress is stored only in this browser.</footer>
+      <footer className="footer">Original GRE-style practice questions and lessons. Every answer key is verified by automated tests. Progress is stored only in this browser.</footer>
     </div>
   );
 }

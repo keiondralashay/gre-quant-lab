@@ -22,6 +22,29 @@ export function QuestionStem({ q, showChoices = true }: { q: Question; showChoic
         <MathText text={q.prompt} />
       </p>
       {q.diagram && <Diagram id={q.diagram} />}
+      {q.table && (
+        <div className="table-wrap">
+          <table className="data-table">
+            <caption>{q.table.caption}</caption>
+            <thead>
+              <tr>
+                {q.table.headers.map((h) => (
+                  <th key={h} scope="col">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {q.table.rows.map((row, i) => (
+                <tr key={i}>
+                  {row.map((cell, j) => (j === 0 ? <th key={j} scope="row">{cell}</th> : <td key={j}>{cell}</td>))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       {q.format === 'qc' && (
         <div className="qc-quantities">
           <div className="qc-q">

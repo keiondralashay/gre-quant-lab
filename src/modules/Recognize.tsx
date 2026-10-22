@@ -7,6 +7,7 @@ import { Feedback, OptionList, Remember, type OptionState } from '../components/
 import { CATEGORIES, CATEGORY_IDS } from '../data/taxonomy';
 import type { Category, Question } from '../data/types';
 import { similarTo, useDeck, type DeckFilter } from '../lib/deck';
+import { CATEGORY_LESSON, href, primaryLesson } from '../data/links';
 import { recordAttempt } from '../lib/progress';
 import { shuffle } from '../lib/random';
 
@@ -67,7 +68,7 @@ function Counter({ position, size }: { position: number; size: number }) {
   );
 }
 
-function TypeRound({ q, optionCount, onNext, onShow, position, size }: { q: Question; optionCount: number; onNext: () => void; onShow: (id: string) => void; position: number; size: number }) {
+export function TypeRound({ q, optionCount, onNext, onShow, position, size }: { q: Question; optionCount: number; onNext: () => void; onShow: (id: string) => void; position: number; size: number }) {
   const options = useMemo(() => recognitionOptions(q, optionCount), [q, optionCount]);
   const [picked, setPicked] = useState<Category | null>(null);
   const [solving, setSolving] = useState(false);
@@ -129,6 +130,13 @@ function TypeRound({ q, optionCount, onNext, onShow, position, size }: { q: Ques
                   : `Not quite. This is ${CATEGORIES[q.category]}.`
             }
           >
+            {result !== 'correct' && (
+              <p>
+                <a className="link-btn" href={href.lesson(primaryLesson(q.id) ?? CATEGORY_LESSON[q.category])}>
+                  Review This Concept →
+                </a>
+              </p>
+            )}
             {q.secondary.length > 0 && (
               <p className="secondary-note">
                 Secondary concept{q.secondary.length > 1 ? 's' : ''}: {q.secondary.map((c) => CATEGORIES[c]).join(', ')}
@@ -171,7 +179,7 @@ function TypeRound({ q, optionCount, onNext, onShow, position, size }: { q: Ques
   );
 }
 
-function FirstStepRound({ q, onNext, onShow, position, size }: { q: Question; onNext: () => void; onShow: (id: string) => void; position: number; size: number }) {
+export function FirstStepRound({ q, onNext, onShow, position, size }: { q: Question; onNext: () => void; onShow: (id: string) => void; position: number; size: number }) {
   const order = useMemo(() => shuffle(q.firstStep.options.map((_, i) => i)), [q]);
   const [picked, setPicked] = useState<number | null>(null);
   const [solving, setSolving] = useState(false);
@@ -219,6 +227,13 @@ function FirstStepRound({ q, onNext, onShow, position, size }: { q: Question; on
             <p>
               <MathText text={q.firstStep.explanation} />
             </p>
+            {!ok && (
+              <p>
+                <a className="link-btn" href={href.lesson(primaryLesson(q.id) ?? CATEGORY_LESSON[q.category], 'fastest')}>
+                  Review This Concept →
+                </a>
+              </p>
+            )}
           </Feedback>
           <Remember text={q.recognition.rule} />
           <div className="actions">

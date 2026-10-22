@@ -8,6 +8,7 @@ import { Disclosure, Feedback, OptionList, Remember, type OptionState } from '..
 import { STRATEGIES } from '../data/taxonomy';
 import type { Question, Verdict } from '../data/types';
 import { similarTo, useDeck, type DeckFilter } from '../lib/deck';
+import { href, primaryLesson, QUESTION_SHORTCUT, CATEGORY_LESSON } from '../data/links';
 import { recordAttempt } from '../lib/progress';
 import { shuffle } from '../lib/random';
 
@@ -39,7 +40,7 @@ export function ChooseMethod({ initialFilter }: { initialFilter: DeckFilter }) {
   );
 }
 
-function MethodRound({ q, onNext, onShow, position, size }: { q: Question; onNext: () => void; onShow: (id: string) => void; position: number; size: number }) {
+export function MethodRound({ q, onNext, onShow, position, size }: { q: Question; onNext: () => void; onShow: (id: string) => void; position: number; size: number }) {
   const opts = useMemo(() => shuffle(q.method.options), [q]);
   const [picked, setPicked] = useState<number | null>(null);
   const [solving, setSolving] = useState(false);
@@ -104,6 +105,23 @@ function MethodRound({ q, onNext, onShow, position, size }: { q: Question; onNex
             {chosen.verdict !== 'best' && (
               <p>
                 <strong>Preferred: {STRATEGIES[best.strategy]}.</strong> <MathText text={best.note} />
+              </p>
+            )}
+            {(chosen.verdict === 'valid' || chosen.verdict === 'slow') && (
+              <p>
+                <a
+                  className="link-btn"
+                  href={QUESTION_SHORTCUT[q.id] ? href.shortcut(QUESTION_SHORTCUT[q.id]) : href.lesson(primaryLesson(q.id) ?? CATEGORY_LESSON[q.category], 'fastest')}
+                >
+                  See a Faster Method →
+                </a>
+              </p>
+            )}
+            {chosen.verdict === 'invalid' && (
+              <p>
+                <a className="link-btn" href={href.lesson(primaryLesson(q.id) ?? CATEGORY_LESSON[q.category], 'fastest')}>
+                  Review This Concept →
+                </a>
               </p>
             )}
           </Feedback>

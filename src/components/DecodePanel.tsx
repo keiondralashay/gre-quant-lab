@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { Question } from '../data/types';
 import { CATEGORIES, CATEGORY_IDS, STRATEGIES } from '../data/taxonomy';
+import { CATEGORY_LESSON, href, primaryLesson } from '../data/links';
 import { recordAttempt } from '../lib/progress';
 import { shuffle } from '../lib/random';
 import { MathText } from './MathText';
@@ -120,6 +121,13 @@ export function DecodePanel({ q, onSolve, onClose }: { q: Question; onSolve: () 
               <p>
                 <MathText text={step.explain} />
               </p>
+              {!step.correct.includes(picked) && (
+                <p>
+                  <a className="link-btn" href={href.lesson(primaryLesson(q.id) ?? CATEGORY_LESSON[q.category], 'decode')}>
+                    Learn What This Means →
+                  </a>
+                </p>
+              )}
               <button type="button" className="btn" onClick={next}>
                 Continue
               </button>

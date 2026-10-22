@@ -71,7 +71,17 @@ export type DiagramId =
   | 'similar-triangles'
   | 'square-diagonal'
   | 'bar-chart-sales'
-  | 'circle-circumference';
+  | 'circle-circumference'
+  // Phase 2
+  | 'parallel-transversal'
+  | 'tri-30-60-90'
+  | 'tri-45-45-90'
+  | 'triangle-height'
+  | 'rectangle'
+  | 'trapezoid'
+  | 'cylinder'
+  | 'venn-two'
+  | 'coordinate-points';
 
 export interface Question {
   id: string;
@@ -91,6 +101,8 @@ export interface Question {
   /** Placeholder/instructions for numeric entry, e.g. "Give your answer as a fraction". */
   entryNote?: string;
   diagram?: DiagramId;
+  /** Data table shown with the question (Phase 2). */
+  table?: { caption: string; headers: string[]; rows: (string | number)[][] };
   answer: Answer;
 
   recognition: {

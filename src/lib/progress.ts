@@ -8,7 +8,18 @@ import type { Area, Category } from '../data/types';
  */
 export const STORAGE_KEY = 'gre.quant.progress.v1';
 
-export type AttemptKind = 'recognition' | 'first-step' | 'strategy' | 'answer' | 'decode-step' | 'decode-exercise';
+export type AttemptKind =
+  | 'recognition'
+  | 'first-step'
+  | 'strategy'
+  | 'answer'
+  | 'decode-step'
+  | 'decode-exercise'
+  // Phase 2
+  | 'lesson-check'
+  | 'shortcut-drill'
+  | 'formula-check'
+  | 'clue';
 export type AttemptResult = 'correct' | 'partial' | 'incorrect';
 
 export interface Attempt {
@@ -27,9 +38,22 @@ export interface Attempt {
   ts: number;
 }
 
+/** Flashcard review state (Phase 2). */
+export interface CardState {
+  knew: number;
+  missed: number;
+  /** Consecutive "I knew this" answers; reset by a miss. */
+  streak: number;
+  lastSeen: number;
+}
+
 export interface ProgressState {
   version: 1;
   attempts: Attempt[];
+  // Phase 2 additions are optional so Phase 1 saved data loads unchanged.
+  cards?: Record<string, CardState>;
+  bookmarks?: string[];
+  visitedLessons?: string[];
 }
 
 const EMPTY: ProgressState = { version: 1, attempts: [] };
@@ -67,6 +91,30 @@ export function recordAttempt(a: Omit<Attempt, 'ts'>) {
   state = { ...state, attempts: attempts.slice(-MAX_ATTEMPTS) };
   persist();
   emit();
+}
+
+function update(patch: Partial<ProgressState>) {
+  state = { ...state, ...patch };
+  persist();
+  emit();
+}
+
+export function recordCard(cardId: string, knew: boolean) {
+  const prev = state.cards?.[cardId] ?? { knew: 0, missed: 0, streak: 0, lastSeen: 0 };
+  const next: CardState = knew
+    ? { ...prev, knew: prev.knew + 1, streak: prev.streak + 1, lastSeen: Date.now() }
+    : { ...prev, missed: prev.missed + 1, streak: 0, lastSeen: Date.now() };
+  update({ cards: { ...state.cards, [cardId]: next } });
+}
+
+export function toggleBookmark(id: string) {
+  const b = state.bookmarks ?? [];
+  update({ bookmarks: b.includes(id) ? b.filter((x) => x !== id) : [...b, id] });
+}
+
+export function markLessonVisited(id: string) {
+  const v = state.visitedLessons ?? [];
+  if (!v.includes(id)) update({ visitedLessons: [...v, id] });
 }
 
 export function resetProgress() {
@@ -126,11 +174,11 @@ export interface Summary {
 }
 
 export function summarize(attempts: Attempt[]): Summary {
-  const kinds: AttemptKind[] = ['recognition', 'first-step', 'strategy', 'answer', 'decode-step', 'decode-exercise'];
+  const kinds: AttemptKind[] = ['recognition', 'first-step', 'strategy', 'answer', 'decode-step', 'decode-exercise', 'lesson-check', 'shortcut-drill', 'formula-check', 'clue'];
   const byKind = Object.fromEntries(kinds.map((k) => [k, tally(attempts.filter((a) => a.kind === k))])) as Record<AttemptKind, Tally>;
 
   const byCategory: Partial<Record<Category, Tally>> = {};
-  const questionAttempts = attempts.filter((a) => a.category && a.kind !== 'decode-exercise');
+  const questionAttempts = attempts.filter((a) => a.category && a.kind !== 'decode-exercise' && a.kind !== 'clue');
   for (const a of questionAttempts) {
     const t = (byCategory[a.category!] ??= { correct: 0, partial: 0, total: 0 });
     t.total++;

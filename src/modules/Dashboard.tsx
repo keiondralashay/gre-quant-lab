@@ -1,3 +1,5 @@
+import { LESSONS } from '../data/library';
+import { CATEGORY_LESSON, href } from '../data/links';
 import { QUESTIONS } from '../data/questions';
 import { CATEGORIES } from '../data/taxonomy';
 import type { Category } from '../data/types';
@@ -19,11 +21,15 @@ export const MODULES: ModuleCard[] = [
   { n: 5, title: 'Guided Problem Solving', blurb: 'Step-by-step tutor with hints.', phase: 3 },
   { n: 6, title: 'GRE Practice Questions', blurb: 'Full test-style sets in all four formats.', phase: 3 },
   { n: 7, title: 'Quantitative Comparison', blurb: 'QC trainer with “Test Different Values”.', phase: 3 },
-  { n: 8, title: 'GRE Topic Library', blurb: 'Every official content area, explained.', phase: 2 },
-  { n: 9, title: 'Shortcut & Formula Vault', blurb: 'Searchable shortcut cards and flashcards.', phase: 2 },
+  { n: 8, title: 'GRE Topic Library', blurb: 'Every official content area in short, practice-linked lessons.', href: '#/library', phase: 2 },
+  { n: 9, title: 'Shortcut & Formula Vault', blurb: 'Searchable shortcuts with “when NOT to use it” and drills.', href: '#/vault', phase: 2 },
   { n: 10, title: 'Mistake Tracker', blurb: 'Error categories and “What should I practice next?”', phase: 4 },
   { n: 11, title: 'Speed Training', blurb: 'Learn / Practice / GRE Speed modes, 30-second recognition.', phase: 4 },
   { n: 12, title: 'Personalized Review', blurb: 'Spaced review of what you missed.', phase: 5 },
+  { n: 13, title: 'Understand the Formula', blurb: 'Tap any part of a formula to see what it means, then test yourself.', href: '#/formulas', phase: 2 },
+  { n: 14, title: 'Spot the Clue', blurb: 'Translate GRE wording into math, and back again.', href: '#/clues', phase: 2 },
+  { n: 15, title: 'Shortcut Flashcards', blurb: 'Flip, rate, bookmark. Missed cards come back first.', href: '#/flashcards', phase: 2 },
+  { n: 16, title: 'Topic Practice', blurb: 'Recognition, decode, strategy, solve, and shortcut practice by lesson.', href: '#/practice', phase: 2 },
 ];
 
 function Stat({ label, t, hint }: { label: string; t: Tally; hint?: string }) {
@@ -55,9 +61,14 @@ export function Dashboard() {
           ))}
         </ol>
         {!hasData && (
-          <a className="btn btn-primary" href="#/recognize">
-            Start with Recognize the Problem →
-          </a>
+          <div className="actions">
+            <a className="btn btn-primary" href="#/recognize">
+              Start with Recognize the Problem →
+            </a>
+            <a className="btn" href="#/library">
+              Browse the Topic Library
+            </a>
+          </div>
         )}
       </section>
 
@@ -85,6 +96,10 @@ export function Dashboard() {
               <Stat label="Strategy selection (fastest)" t={s.byKind.strategy} />
               <Stat label="Solving accuracy (first try)" t={s.byKind.answer} />
               <Stat label="Decode exercises" t={s.byKind['decode-exercise']} />
+              <Stat label="Lesson quick checks" t={s.byKind['lesson-check']} />
+              <Stat label="Shortcut drills" t={s.byKind['shortcut-drill']} />
+              <Stat label="Formula tests" t={s.byKind['formula-check']} />
+              <Stat label="Spot the Clue" t={s.byKind.clue} />
               <div className="stat">
                 <div className="stat-value">{s.avgSolveMs === null ? '—' : `${Math.round(s.avgSolveMs / 1000)}s`}</div>
                 <div className="stat-label">Average solving time</div>
@@ -94,7 +109,8 @@ export function Dashboard() {
               </div>
             </div>
             <p className="note">
-              {s.questionsSeen} of {QUESTIONS.length} questions in the bank practiced.
+              {s.questionsSeen} of {QUESTIONS.length} questions in the bank practiced · {(progress.visitedLessons ?? []).length} of {LESSONS.length} lessons opened ·{' '}
+              {Object.keys(progress.cards ?? {}).length} flashcards reviewed
             </p>
 
             {weak.length > 0 && (
@@ -106,7 +122,7 @@ export function Dashboard() {
                       <span>
                         {CATEGORIES[w.category]} — {Math.round(w.accuracy * 100)}% over {w.total} attempts
                       </span>{' '}
-                      <a href={`#/recognize?cat=${w.category}`}>Practice →</a>
+                      <a href={`#/recognize?cat=${w.category}`}>Practice →</a> · <a href={href.lesson(CATEGORY_LESSON[w.category])}>Review lesson →</a>
                     </li>
                   ))}
                 </ul>

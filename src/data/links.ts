@@ -1,0 +1,188 @@
+// Connects questions, lessons, shortcuts, and formulas. Every id here is
+// checked by src/test/links.test.ts so navigation buttons never dead-end.
+import type { Category } from './types';
+
+/** Question → [primary lesson, ...other lessons]. */
+export const QUESTION_LESSONS: Record<string, string[]> = {
+  'ar-pct-sale': ['percentages'],
+  'ar-pct-change-qc': ['percent-change'],
+  'ar-odd-even-multi': ['number-properties'],
+  'ar-remainder-3n': ['remainders'],
+  'ar-units-digit-7': ['patterns', 'remainders', 'exponents'],
+  'ar-ratio-marbles': ['ratios'],
+  'ar-gcf-84-126': ['gcf-lcm', 'prime-factorization'],
+  'ar-exp-sum-powers': ['exponents', 'exponent-rules'],
+  'ar-rate-bottles': ['rates', 'proportions'],
+  'ar-factors-36-qc': ['prime-factorization'],
+  'al-quad-x2-7x-10': ['quadratics', 'factoring'],
+  'al-quad-3x2-multi': ['quadratics', 'quadratic-formula'],
+  'al-system-elim-y': ['systems'],
+  'al-system-sum': ['systems'],
+  'al-linear-2x3': ['linear-equations', 'fractions'],
+  'al-ineq-flip': ['inequalities'],
+  'al-diff-squares': ['factoring'],
+  'al-exp-4x-8x': ['exponent-rules'],
+  'al-translate-five-less': ['word-problems', 'linear-equations'],
+  'al-x2-4x-qc': ['quadratics'],
+  'al-slope-two-points': ['slope', 'coordinate-plane'],
+  'al-fraction-power-qc': ['exponents', 'roots'],
+  'ge-right-tri-6-8': ['right-triangles'],
+  'ge-circle-area-from-c': ['circles'],
+  'ge-triangle-angle': ['triangles'],
+  'ge-square-diagonal': ['special-right-triangles', 'quadrilaterals'],
+  'ge-third-side-qc': ['triangles'],
+  'ge-box-diagonal': ['volume-surface-area', 'right-triangles'],
+  'ge-similar-triangles': ['similarity'],
+  'da-average-sixth': ['mean'],
+  'da-median-even': ['median-mode-range'],
+  'da-dice-sum-8': ['probability', 'counting'],
+  'da-two-red': ['probability'],
+  'da-sales-pct-change': ['graphs', 'data-interpretation', 'percent-change'],
+  'da-sales-fraction': ['graphs', 'data-interpretation'],
+  'da-committee-combo': ['combinations'],
+  'da-mean-median-qc': ['mean', 'median-mode-range'],
+  'da-greatest-sd': ['standard-deviation'],
+  'p2-sign-qc': ['integers'],
+  'p2-fraction-ops': ['fractions'],
+  'p2-decimal-divide': ['decimals'],
+  'p2-divisible-digit': ['divisibility'],
+  'p2-root-add': ['roots'],
+  'p2-abs-qc': ['absolute-value'],
+  'p2-avg-speed': ['distance-rate-time'],
+  'p2-work-together': ['work'],
+  'p2-equivalent-expr': ['expressions'],
+  'p2-alg-fraction': ['algebraic-fractions', 'factoring'],
+  'p2-function-compose': ['functions'],
+  'p2-symbol-function': ['functions'],
+  'p2-midpoint': ['coordinate-plane', 'coordinate-geometry-shapes'],
+  'p2-parallel-angles': ['lines-angles'],
+  'p2-octagon-angle': ['polygons'],
+  'p2-rect-area-qc': ['perimeter-area', 'quadrilaterals'],
+  'p2-trapezoid': ['quadrilaterals'],
+  'p2-cylinder': ['volume-surface-area'],
+  'p2-equilateral-perimeter': ['special-right-triangles'],
+  'p2-weighted-average': ['weighted-average'],
+  'p2-weighted-qc': ['weighted-average'],
+  'p2-pair-together': ['permutations', 'counting'],
+  'p2-code-count': ['counting'],
+  'p2-venn': ['sets-venn'],
+  'p2-table-percent': ['tables', 'data-interpretation'],
+  'p2-table-total': ['tables'],
+  'p2-consecutive-odd': ['integers', 'word-problems'],
+  'p2-sd-transform-qc': ['standard-deviation'],
+};
+
+/** Question → the shortcut it best exercises (only where a genuine shortcut applies). */
+export const QUESTION_SHORTCUT: Record<string, string> = {
+  'ar-pct-sale': 'percent-change',
+  'ar-pct-change-qc': 'percent-change',
+  'ar-odd-even-multi': 'plug-in-values',
+  'ar-remainder-3n': 'remainder-patterns',
+  'ar-units-digit-7': 'remainder-patterns',
+  'ar-ratio-marbles': 'ratios-proportions',
+  'ar-gcf-84-126': 'gcf-lcm',
+  'ar-exp-sum-powers': 'exponent-rules',
+  'ar-rate-bottles': 'ratios-proportions',
+  'ar-factors-36-qc': 'prime-factorization',
+  'al-quad-x2-7x-10': 'factor-a1',
+  'al-quad-3x2-multi': 'factor-a-not-1',
+  'al-system-elim-y': 'elimination',
+  'al-system-sum': 'elimination',
+  'al-diff-squares': 'difference-of-squares',
+  'al-exp-4x-8x': 'exponent-rules',
+  'al-translate-five-less': 'backsolving',
+  'al-x2-4x-qc': 'qc-strategies',
+  'al-fraction-power-qc': 'qc-strategies',
+  'ge-right-tri-6-8': 'pythagorean-triples',
+  'ge-circle-area-from-c': 'circle-formulas',
+  'ge-square-diagonal': 'tri-45-45-90',
+  'ge-third-side-qc': 'qc-strategies',
+  'ge-box-diagonal': 'pythagorean-triples',
+  'ge-similar-triangles': 'ratios-proportions',
+  'da-average-sixth': 'average-total',
+  'da-two-red': 'probability-shortcuts',
+  'da-sales-pct-change': 'estimation',
+  'da-committee-combo': 'counting-strategies',
+  'da-mean-median-qc': 'qc-strategies',
+  'p2-fraction-ops': 'simplify-before-multiplying',
+  'p2-divisible-digit': 'divisibility-rules',
+  'p2-avg-speed': 'average-total',
+  'p2-equivalent-expr': 'plug-in-values',
+  'p2-alg-fraction': 'difference-of-squares',
+  'p2-rect-area-qc': 'qc-strategies',
+  'p2-equilateral-perimeter': 'tri-30-60-90',
+  'p2-weighted-average': 'weighted-average',
+  'p2-weighted-qc': 'weighted-average',
+  'p2-pair-together': 'counting-strategies',
+  'p2-code-count': 'counting-strategies',
+  'p2-consecutive-odd': 'average-total',
+};
+
+/** Recognition category → lesson to review when that category is missed. */
+export const CATEGORY_LESSON: Record<Category, string> = {
+  linear: 'linear-equations',
+  systems: 'systems',
+  quadratic: 'quadratics',
+  factoring: 'factoring',
+  exponents: 'exponents',
+  ratios: 'ratios',
+  percentages: 'percentages',
+  inequalities: 'inequalities',
+  'number-properties': 'number-properties',
+  remainders: 'remainders',
+  geometry: 'triangles',
+  probability: 'probability',
+  statistics: 'mean',
+  'data-interpretation': 'data-interpretation',
+};
+
+/** Phase 1 decode lesson → formula to open for "Learn What This Means". */
+export const DECODE_LESSON_FORMULA: Record<string, string> = {
+  quadratic: 'quadratic-standard',
+  linear: 'slope-intercept',
+  'slope-intercept': 'slope-intercept',
+  exponents: 'exponent-rules',
+  fractions: 'ratio',
+  geometry: 'circle-area',
+  ratios: 'ratio',
+  inequalities: 'slope-intercept',
+  probability: 'probability',
+  statistics: 'average',
+};
+
+/** Library lesson for a Phase 1 decode lesson (for lessons without a natural formula). */
+export const DECODE_LESSON_LIBRARY: Record<string, string> = {
+  quadratic: 'quadratics',
+  linear: 'linear-equations',
+  'slope-intercept': 'slope',
+  exponents: 'exponents',
+  fractions: 'fractions',
+  geometry: 'circles',
+  ratios: 'ratios',
+  inequalities: 'inequalities',
+  probability: 'probability',
+  statistics: 'mean',
+};
+
+export function primaryLesson(questionId: string): string | undefined {
+  return QUESTION_LESSONS[questionId]?.[0];
+}
+
+export function questionsForLesson(lessonId: string): string[] {
+  return Object.entries(QUESTION_LESSONS)
+    .filter(([, ls]) => ls.includes(lessonId))
+    .map(([q]) => q);
+}
+
+export function questionsForShortcut(shortcutId: string): string[] {
+  return Object.entries(QUESTION_SHORTCUT)
+    .filter(([, s]) => s === shortcutId)
+    .map(([q]) => q);
+}
+
+export const href = {
+  lesson: (id: string, section?: string) => `#/library/${id}${section ? `?section=${section}` : ''}`,
+  lessonPractice: (id: string, mode?: string) => `#/practice?lesson=${id}${mode ? `&mode=${mode}` : ''}`,
+  shortcut: (id: string, practice = false) => `#/vault/${id}${practice ? '?practice=1' : ''}`,
+  formula: (id: string) => `#/formulas/${id}`,
+};

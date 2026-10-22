@@ -7,6 +7,8 @@ import { Disclosure, Remember, Steps } from '../components/ui';
 import { STRATEGIES } from '../data/taxonomy';
 import type { Question } from '../data/types';
 import { similarTo, useDeck, type DeckFilter } from '../lib/deck';
+import { href, QUESTION_SHORTCUT } from '../data/links';
+import { SHORTCUT_BY_ID } from '../data/shortcuts';
 
 const hasShortcut = (q: Question) => !q.solution.longIsFastest && !!q.solution.long?.length;
 
@@ -105,6 +107,13 @@ export function ShortcutCard({ q }: { q: Question }) {
           </Disclosure>
         )}
         <Remember text={s.remember} />
+        {QUESTION_SHORTCUT[q.id] && (
+          <p>
+            <a className="link-btn" href={href.shortcut(QUESTION_SHORTCUT[q.id], true)}>
+              Practice This Shortcut: {SHORTCUT_BY_ID[QUESTION_SHORTCUT[q.id]].name} →
+            </a>
+          </p>
+        )}
       </section>
       {!s.longIsFastest && s.long && (
         <Disclosure label="Show the Long Way">

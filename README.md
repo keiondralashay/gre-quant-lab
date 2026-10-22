@@ -47,16 +47,40 @@ No API keys and no backend. All questions come from a fixed, hand-written bank. 
 
 ```
 src/
-  data/            question bank (by area), taxonomy, decode lessons, types
+  data/            question bank, taxonomy, decode lessons, library/, shortcuts, formulas,
+                   clues, flashcards, links (cross-references)
   lib/             grading (exact rationals), progress store, deck/filtering, generators
   components/      MathText (KaTeX), QuestionSolver, DecodePanel, Explanation, Diagrams
-  modules/         Dashboard, Recognize, Decode, ChooseMethod, ShortcutVsTraditional
+  modules/         Dashboard, Recognize, Decode, ChooseMethod, ShortcutVsTraditional,
+                   Library, Vault, Formulas, Clues, Flashcards, Practice
   test/            verification and interaction tests
 ```
 
+## Phase 2 — implemented
+
+| Module | What works |
+| --- | --- |
+| **GRE Topic Library** (`#/library`) | 55 lessons across Arithmetic (19), Algebra (13), Geometry (11), Data Analysis (12). Every lesson has WHAT IS IT · HOW DO I RECOGNIZE IT (3 clues) · DECODE IT · WHAT DO I NEED TO REMEMBER · WHAT'S THE FASTEST WAY (+ when valid) · SHOW ME (+ collapsible traditional solution) · COMMON GRE TRAP · LET ME TRY (graded quick checks) · ONE-LINE TAKEAWAY. Searchable, with per-lesson progress from real attempts and links to practice, shortcuts, and formulas. |
+| **Shortcut & Formula Vault** (`#/vault`) | 27 shortcuts, searchable by name, formula, concept, or clue. Each has a recognition clue, rule, symbols explained, worked example, when to use / when NOT to use, a bookmark, and **Practice This Shortcut** (a graded drill plus tagged bank questions). |
+| **Understand the Formula** (`#/formulas`) | 25 formulas. Tap a component to highlight it everywhere it appears (e.g. every *a* in the quadratic formula) and see its meaning. Labeled diagrams for geometry. Every formula has a graded **Test My Understanding**; the quadratic formulas also offer generated a/b/c practice. |
+| **Spot the Clue** (`#/clues`) | Phrase → meaning (26), words → expression (13), expression → words (9), and wording-trap pairs (8). Options are shuffled. |
+| **Shortcut Flashcards** (`#/flashcards`) | ~135 cards derived from shortcuts, formulas, clue words, and lesson takeaways. Flip, I Knew This, Need More Practice, Bookmark, Practice an Example. Saved per card; repeatedly missed cards come first next time and return later in the same session. |
+| **Topic Practice** (`#/practice`) | Recognition, Decode, Strategy, Solve, and Shortcut practice per lesson or mixed (topic hidden), at Foundational/Intermediate/Challenging. Empty combinations say so. |
+| **Phase 1 integration** | Missed recognition → **Review This Concept**. Missed decode step or coefficient → **Learn What This Means**. Valid-but-slower strategy → **See a Faster Method**. Missed question with a tagged shortcut → **Practice This Shortcut**. All targets are verified to exist by tests, and every lesson, shortcut, and formula URL is rendered in a routing test. |
+
+**Question bank:** 67 verified questions (38 Phase 1 + 29 Phase 2). Every lesson has at least one.
+
+**Verification added:** `phase2Content.test.ts` recomputes every numeric answer in all lesson checks, shortcut drills, and formula tests (it fails on a missing or stale check). It also proves exactly one option of each Spot-the-Clue translation is equivalent to the statement, by evaluating every option, and renders every formula highlight through KaTeX. Link integrity is checked across questions, lessons, shortcuts, and formulas. `phase2Interactions.test.tsx` covers the new modules and the four integration buttons.
+
+### Known gaps (honest status)
+
+- **Practice banks are thin.** 26 lessons have 1 bank question, 23 have 2, and only 6 have 3 or more. Only 2 lessons have questions at all three difficulty levels. Every lesson still has its own graded quick checks.
+- Recognition still uses the 14 Phase 1 categories. Sets, counting, and functions questions map to the nearest category (statistics, probability, linear).
+- Flashcard ordering is priority-based (misses first), not full spaced repetition. That is Phase 5.
+- There is no Verbal section in this repository, so there was nothing to preserve or test.
+
 ## Remaining phases
 
-- **Phase 2:** GRE Topic Library, Shortcut & Formula Vault, Spot the Clue, topic-based sessions.
 - **Phase 3:** Guided step-by-step tutor, full practice sets, QC trainer with "Test Different Values", data interpretation sets.
 - **Phase 4:** Mistake Tracker with error classification (asking the learner when the cause is unclear), Speed Training, 30-Second Recognition.
 - **Phase 5:** Spaced review, adaptive recommendations, expanded problem generation, bookmarks, learning paths.

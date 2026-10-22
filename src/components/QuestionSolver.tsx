@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { QCAnswer, Question } from '../data/types';
+import { CATEGORY_LESSON, href, primaryLesson, QUESTION_SHORTCUT } from '../data/links';
 import { grade, QC_LABELS, type Response } from '../lib/grading';
 import { recordAttempt } from '../lib/progress';
 import { DecodePanel } from './DecodePanel';
@@ -197,7 +198,7 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
           onClose={() => setDecodeOpen(false)}
           onSolve={() => {
             setDecodeOpen(false);
-            answerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            answerRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
           }}
         />
       )}
@@ -225,6 +226,18 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
             {result !== 'correct' && q.mistakes.length > 0 && (
               <p>
                 <strong>Common mistake:</strong> <MathText text={q.mistakes[0]} />
+              </p>
+            )}
+            {firstResult === 'incorrect' && (
+              <p className="link-row">
+                {QUESTION_SHORTCUT[q.id] && (
+                  <a className="link-btn" href={href.shortcut(QUESTION_SHORTCUT[q.id], true)}>
+                    Practice This Shortcut →
+                  </a>
+                )}
+                <a className="link-btn" href={href.lesson(primaryLesson(q.id) ?? CATEGORY_LESSON[q.category])}>
+                  Review This Concept →
+                </a>
               </p>
             )}
           </Feedback>
