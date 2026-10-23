@@ -63,6 +63,7 @@ export const MODE_LABELS: Record<string, string> = {
   quick: 'Practice What I Need',
   guided: 'Walk Me Through It',
   'qc-trainer': 'QC Trainer',
+  'di-set': 'Data Interpretation sets',
   'guided-other-track': 'Walk Me Through It (second path)',
 };
 

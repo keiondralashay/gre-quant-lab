@@ -1,5 +1,7 @@
 import type { Question } from '../data/types';
 import { Diagram } from './Diagrams';
+import { DIChart } from './DIChart';
+import { DI_SET_BY_ID } from '../data/diSets';
 import { MathText } from './MathText';
 import { DIFFICULTY_LABEL, DIFFICULTY_TONE, Tag } from './ui';
 
@@ -11,7 +13,7 @@ export const FORMAT_LABEL: Record<Question['format'], string> = {
 };
 
 /** The question as it would appear on the test, without revealing its category. */
-export function QuestionStem({ q, showChoices = true }: { q: Question; showChoices?: boolean }) {
+export function QuestionStem({ q, showChoices = true, showData = true }: { q: Question; showChoices?: boolean; showData?: boolean }) {
   return (
     <div className="stem">
       <div className="stem-meta">
@@ -22,6 +24,7 @@ export function QuestionStem({ q, showChoices = true }: { q: Question; showChoic
         <MathText text={q.prompt} />
       </p>
       {q.diagram && <Diagram id={q.diagram} />}
+      {q.diSet && showData && <DIChart chart={DI_SET_BY_ID[q.diSet].chart} />}
       {q.table && (
         <div className="table-wrap">
           <table className="data-table">

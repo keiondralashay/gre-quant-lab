@@ -116,6 +116,8 @@ export interface Question {
   diagram?: DiagramId;
   /** Data table shown with the question (Phase 2). */
   table?: { caption: string; headers: string[]; rows: (string | number)[][] };
+  /** Data Interpretation set whose shared chart this question uses (see data/diSets.ts). */
+  diSet?: string;
   answer: Answer;
 
   recognition: {

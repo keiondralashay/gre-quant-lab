@@ -22,6 +22,8 @@ export interface Spec {
   entryNote?: string;
   diagram?: DiagramId;
   table?: Question['table'];
+  /** Data Interpretation set id (shared chart). */
+  set?: string;
   clues: string[];
   why: string;
   strat: string;
@@ -79,6 +81,7 @@ export function build(s: Spec): Question {
     entryNote: s.entryNote,
     diagram: s.diagram,
     table: s.table,
+    diSet: s.set,
     answer,
     recognition: { clues: s.clues, why: s.why, strategy: s.strat, rule: s.rule },
     firstStep: { options: s.first, correct: 0, explanation: s.firstWhy },

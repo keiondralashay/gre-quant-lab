@@ -23,7 +23,7 @@ import { recognitionOptions } from './Recognize';
 /** A step as the UI runs it. `answers` holds every accepted option index. */
 export type RunStep =
   | { id: string; kind: 'choice'; prompt: string; options: string[]; answers: number[]; related?: number[]; hints: string[]; explain: string }
-  | { id: string; kind: 'multi'; prompt: string; options: string[]; correct: number[]; hints: string[]; explain: string }
+  | { id: string; kind: 'multi'; prompt: string; options: string[]; correct: number[]; hints: string[]; explain: string; noun?: 'given' | 'needed' }
   | { id: string; kind: 'number'; prompt: string; answer: string; hints: string[]; explain: string }
   | { id: string; kind: 'fields'; prompt: string; fields: { id: string; label: string; answer: string }[]; hints: string[]; explain: string }
   /** Ungraded: the learner commits to an idea, then compares with the worked reasoning. */
@@ -168,7 +168,9 @@ export function StepCard({ number, title, step, onDone }: { number: string; titl
       if ([...picked].sort().join() === want) return setStatus('correct');
       const extra = picked.filter((i) => !step.correct.includes(i)).length;
       const missing = step.correct.filter((i) => !picked.includes(i)).length;
-      wrong(`Not quite: ${[extra && `${extra} selected statement${extra > 1 ? 's are' : ' is'} not given`, missing && `${missing} given statement${missing > 1 ? 's are' : ' is'} missing`].filter(Boolean).join(', ')}.`);
+      const [thing, adj] = step.noun === 'needed' ? ['piece', 'needed'] : ['statement', 'given'];
+      const pl = (n: number) => (n > 1 ? `${thing}s are` : `${thing} is`);
+      wrong(`Not quite: ${[extra && `${extra} selected ${pl(extra)} not ${adj}`, missing && `${missing} ${adj} ${pl(missing)} missing`].filter(Boolean).join(', ')}.`);
     } else if (step.kind === 'number') {
       if (!parseRational(text)) return setMessage('Enter a number, a fraction like 2/3, or a decimal.');
       if (tries === 0) firstResponse.current = text.trim();
