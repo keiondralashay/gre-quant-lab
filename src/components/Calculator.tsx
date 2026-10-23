@@ -101,6 +101,12 @@ export function Calculator({ onClose, onTransfer }: { onClose: () => void; onTra
 export function CalcButton({ onTransfer }: { onTransfer?: (value: string) => void }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Lets the page reserve room under the calculator's bottom sheet on small screens.
+  useEffect(() => {
+    if (!open) return;
+    document.body.classList.add('calc-open');
+    return () => document.body.classList.remove('calc-open');
+  }, [open]);
   return (
     <>
       <button

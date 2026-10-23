@@ -18,6 +18,7 @@ import { QuickPractice } from './modules/QuickPractice';
 import { Review } from './modules/Review';
 import { Speed } from './modules/Speed';
 import { Dashboard } from './modules/Dashboard';
+import { SiteNav } from './components/SiteNav';
 import { Decode } from './modules/Decode';
 import { Recognize } from './modules/Recognize';
 import { ShortcutVsTraditional } from './modules/ShortcutVsTraditional';
@@ -38,23 +39,7 @@ function filterFrom(params: URLSearchParams): DeckFilter {
   return { ...ALL_FILTER, category: cat && CATEGORY_IDS.includes(cat as Category) ? (cat as Category) : 'all' };
 }
 
-const NAV = [
-  { href: '#/', path: '/', label: 'Home' },
-  { href: '#/library', path: '/library', label: 'Library' },
-  { href: '#/practice', path: '/practice', label: 'Practice' },
-  { href: '#/speed', path: '/speed', label: 'Speed' },
-  { href: '#/review', path: '/review', label: 'Review' },
-  { href: '#/progress', path: '/progress', label: 'Progress' },
-  { href: '#/vault', path: '/vault', label: 'Vault' },
-  { href: '#/formulas', path: '/formulas', label: 'Formulas' },
-  { href: '#/clues', path: '/clues', label: 'Clues' },
-  { href: '#/flashcards', path: '/flashcards', label: 'Flashcards' },
-];
 
-/** Phase 1 trainers live under Practice in the nav. */
-const PRACTICE_PATHS = ['/practice', '/recognize', '/decode', '/method', '/shortcut', '/guided', '/qc', '/di'];
-/** Phase 4 personalization pages live under Progress. */
-const PROGRESS_PATHS = ['/progress', '/next', '/quick'];
 
 export function App() {
   const [route, setRoute] = useState(parseHash);
@@ -129,7 +114,6 @@ export function App() {
     default:
       view = <Dashboard />;
   }
-  const activeNav = PRACTICE_PATHS.includes(base) ? '/practice' : PROGRESS_PATHS.includes(base) ? '/progress' : base;
 
   return (
     <div className="app">
@@ -140,13 +124,7 @@ export function App() {
           </span>
           <span>GRE Quant</span>
         </a>
-        <nav className="nav" aria-label="Main">
-          {NAV.map((n) => (
-            <a key={n.href} href={n.href} className={activeNav === n.path ? 'active' : ''} aria-current={activeNav === n.path ? 'page' : undefined}>
-              {n.label}
-            </a>
-          ))}
-        </nav>
+        <SiteNav base={base} />
       </header>
       <main className="main">{view}</main>
       <footer className="footer">Original GRE-style practice questions and lessons. Every answer key is verified by automated tests. Progress is stored only in this browser.</footer>
