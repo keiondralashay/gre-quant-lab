@@ -1,3 +1,4 @@
+import { getProgress } from './progress';
 import { useCallback, useMemo, useState } from 'react';
 import { QUESTIONS } from '../data/questions';
 import type { Area, Category, Question } from '../data/types';
@@ -31,7 +32,23 @@ export function similarTo(q: Question, pool: Question[] = QUESTIONS, rand: () =>
   return null;
 }
 
-/** A shuffled, mixed-topic sequence of questions that reshuffles when exhausted. */
+/**
+ * Shuffle, then put questions never attempted first and the rest least recently
+ * seen first, so a deck repeats as little as possible.
+ */
+export function orderBySeen(ids: string[], attempts: { ref: string; ts: number }[], rand: () => number = Math.random): string[] {
+  const last = new Map<string, number>();
+  for (const a of attempts) {
+    const ref = a.ref.split(':')[0];
+    last.set(ref, Math.max(last.get(ref) ?? 0, a.ts));
+  }
+  const shuffled = shuffle(ids, rand);
+  const unseen = shuffled.filter((id) => !last.has(id));
+  const seen = shuffled.filter((id) => last.has(id)).sort((a, b) => last.get(a)! - last.get(b)!);
+  return [...unseen, ...seen];
+}
+
+/** A mixed-topic sequence of questions (unseen first) that reorders when exhausted. */
 export function useDeck(filter: DeckFilter, extra: (q: Question) => boolean = () => true) {
   const pool = useMemo(() => QUESTIONS.filter((q) => matches(q, filter) && extra(q)), [filter.area, filter.category, filter.difficulty]); // eslint-disable-line react-hooks/exhaustive-deps
   const [state, setState] = useState(() => ({ key: '', order: [] as string[], pos: 0, override: null as string | null }));
@@ -39,7 +56,10 @@ export function useDeck(filter: DeckFilter, extra: (q: Question) => boolean = ()
 
   let { order, pos, override } = state;
   if (state.key !== key) {
-    order = shuffle(pool.map((q) => q.id));
+    order = orderBySeen(
+      pool.map((q) => q.id),
+      getProgress().attempts,
+    );
     pos = 0;
     override = null;
     // Sync derived state during render (safe: deterministic on key change).
@@ -53,7 +73,7 @@ export function useDeck(filter: DeckFilter, extra: (q: Question) => boolean = ()
     setState((s) => {
       if (s.pos + 1 >= s.order.length) {
         const last = s.order[s.pos];
-        let order = shuffle(s.order);
+        let order = orderBySeen(s.order, getProgress().attempts);
         if (order.length > 1 && order[0] === last) order = [...order.slice(1), order[0]];
         return { ...s, order, pos: 0, override: null };
       }

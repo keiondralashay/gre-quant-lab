@@ -178,7 +178,8 @@ describe('Speed drills', () => {
       vi.advanceTimersByTime(4000);
     });
     await user.click(screen.getAllByRole('button').find((b) => b.className.includes('option'))!);
-    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    // Find by text: role-name queries crash jsdom when another button renders KaTeX.
+    await user.click(screen.getAllByRole('button').find((b) => b.textContent === 'Submit')!);
     const rec = getProgress().attempts.find((a) => a.kind === 'recognition')!;
     expect(rec.ms).toBeGreaterThanOrEqual(4000);
     expect(rec.ms).toBeLessThan(6000);
