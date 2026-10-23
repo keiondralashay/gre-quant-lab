@@ -17,7 +17,7 @@ export type CStep =
   | ['n', string, string, string, string | string[], string]
   | ['f', string, string, [string, string, string][], string | string[], string];
 
-export type CTrack = [string, CStep, ...CStep[]];
+export type CTrack = [string, CStep, CStep, ...CStep[]];
 
 export interface CGuide {
   qid: string;
