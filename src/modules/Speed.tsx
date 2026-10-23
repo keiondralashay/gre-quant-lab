@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { ExamAnswer, emptyResponse, isAnswered } from '../components/ExamAnswer';
+import { CalcButton } from '../components/Calculator';
 import { MathText } from '../components/MathText';
 import { QuestionStem } from '../components/QuestionStem';
 import { Feedback, OptionList, Remember, type OptionState } from '../components/ui';
@@ -542,6 +543,9 @@ function TimedRun({ s, onFinish }: { s: ActiveTimed; onFinish: (id: string) => v
         </button>
       </nav>
 
+      <div className="calc-bar">
+        <CalcButton onTransfer={q.format === 'numeric' && !reviewScreen ? (v) => update({ responses: { ...s.responses, [q.id]: { kind: 'numeric', text: v } } }) : undefined} />
+      </div>
       {reviewScreen ? (
         <section className="card">
           <h3>Review</h3>

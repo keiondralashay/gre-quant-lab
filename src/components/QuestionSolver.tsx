@@ -12,6 +12,7 @@ import { QuestionStem } from './QuestionStem';
 import { Feedback } from './ui';
 import { QC_MODEL_BY_QID } from '../data/qcModels';
 import { ValueTester } from './ValueTester';
+import { CalcButton } from './Calculator';
 
 function emptyResponse(q: Question): Response {
   switch (q.format) {
@@ -214,6 +215,7 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
               Decode This Question
             </button>
           )}
+          <CalcButton onTransfer={q.format === 'numeric' && !locked ? (v) => setResponse({ kind: 'numeric', text: v }) : undefined} />
           {QC_MODEL_BY_QID[q.id] && source !== 'qc-trainer' && (
             <button type="button" className="btn" aria-expanded={testerOpen} onClick={() => setTesterOpen((o) => !o)}>
               Test Different Values

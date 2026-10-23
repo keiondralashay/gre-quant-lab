@@ -1922,3 +1922,103 @@ a.practice-mode:hover {
   max-width: 480px;
   margin: 0 auto;
 }
+
+/* ---------- GRE on-screen calculator ---------- */
+.calc-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+.calc-toggle.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.calc {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  width: 280px;
+  padding: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+}
+.calc:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.calc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.calc-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+  min-height: 2.4em;
+}
+.calc-mem {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 1em;
+}
+.calc-note {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: var(--bad);
+}
+.calc-keys {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.calc-key {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.calc-key.op {
+  background: var(--accent-soft);
+}
+.calc-key.fn {
+  background: var(--surface-2);
+}
+.calc-key:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.calc-transfer {
+  width: 100%;
+  margin-top: 8px;
+}
+@media (max-width: 600px) {
+  .calc {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+  .calc-key {
+    min-height: 44px;
+  }
+}
