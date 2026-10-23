@@ -1763,3 +1763,56 @@ a.practice-mode:hover {
 .guided-other {
   margin-top: 20px;
 }
+
+/* ---------- QC trainer: Test Different Values ---------- */
+.value-tester h4 {
+  margin: 0 0 4px;
+}
+.vt-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin: 8px 0;
+}
+.vt-inputs label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.vt-inputs input {
+  width: 9rem;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.vt-try {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.vt-table td:last-child {
+  white-space: nowrap;
+}
+.vt-summary p {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 8px 8px 0;
+}
+.qc-rules summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.qc-choices-list {
+  padding-left: 1.2em;
+  list-style: none;
+}

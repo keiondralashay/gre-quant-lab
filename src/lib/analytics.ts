@@ -62,6 +62,7 @@ export const MODE_LABELS: Record<string, string> = {
   'review-recognize': 'Review: recognize only',
   quick: 'Practice What I Need',
   guided: 'Walk Me Through It',
+  'qc-trainer': 'QC Trainer',
   'guided-other-track': 'Walk Me Through It (second path)',
 };
 

@@ -147,6 +147,17 @@ export const QUESTION_LESSONS: Record<string, string[]> = {
   'b3-venn-min-qc': ['sets-venn'],
   'b3-table-share': ['tables', 'data-interpretation'],
   'b3-bar-lowest': ['graphs'],
+  'qc-neg-cube': ['exponents', 'integers'],
+  'qc-zero-square': ['exponents'],
+  'qc-abs-neg': ['absolute-value'],
+  'qc-exp-gt1': ['exponents'],
+  'qc-exp-neg-frac': ['exponents', 'integers'],
+  'qc-frac-shift': ['fractions', 'algebraic-fractions'],
+  'qc-expand-square': ['factoring', 'expressions'],
+  'qc-overlap-ranges': ['inequalities'],
+  'qc-integer-pin': ['integers', 'inequalities'],
+  'qc-xsq-9': ['quadratics', 'roots'],
+  'qc-xy-12': ['number-properties', 'prime-factorization'],
 };
 
 /** Question → the shortcut it best exercises (only where a genuine shortcut applies). */
@@ -223,6 +234,17 @@ export const QUESTION_SHORTCUT: Record<string, string> = {
   'b3-letters-perm': 'counting-strategies',
   'b3-handshakes': 'counting-strategies',
   'b3-venn-min-qc': 'qc-strategies',
+  'qc-neg-cube': 'qc-strategies',
+  'qc-zero-square': 'qc-strategies',
+  'qc-abs-neg': 'qc-strategies',
+  'qc-exp-gt1': 'qc-strategies',
+  'qc-exp-neg-frac': 'qc-strategies',
+  'qc-frac-shift': 'qc-strategies',
+  'qc-expand-square': 'qc-strategies',
+  'qc-overlap-ranges': 'qc-strategies',
+  'qc-integer-pin': 'qc-strategies',
+  'qc-xsq-9': 'qc-strategies',
+  'qc-xy-12': 'qc-strategies',
 };
 
 /** Recognition category → lesson to review when that category is missed. */

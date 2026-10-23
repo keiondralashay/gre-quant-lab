@@ -23,9 +23,7 @@ export type AttemptKind =
   // Phase 4
   | 'clue-spot'
   // Phase 3 (corrective): one graded step of "Walk Me Through It"
-  | 'guided-step'
-  // Quantitative Comparison trainer exercises
-  | 'qc-drill';
+  | 'guided-step';
 export type AttemptResult = 'correct' | 'partial' | 'incorrect';
 
 export interface Attempt {
@@ -280,7 +278,7 @@ export interface Summary {
 }
 
 export function summarize(attempts: Attempt[]): Summary {
-  const kinds: AttemptKind[] = ['recognition', 'first-step', 'strategy', 'answer', 'decode-step', 'decode-exercise', 'lesson-check', 'shortcut-drill', 'formula-check', 'clue', 'clue-spot', 'guided-step', 'qc-drill'];
+  const kinds: AttemptKind[] = ['recognition', 'first-step', 'strategy', 'answer', 'decode-step', 'decode-exercise', 'lesson-check', 'shortcut-drill', 'formula-check', 'clue', 'clue-spot', 'guided-step'];
   const byKind = Object.fromEntries(kinds.map((k) => [k, tally(attempts.filter((a) => a.kind === k))])) as Record<AttemptKind, Tally>;
 
   const byCategory: Partial<Record<Category, Tally>> = {};

@@ -6,6 +6,7 @@ import { ChooseMethod } from './modules/ChooseMethod';
 import { Clues } from './modules/Clues';
 import { Flashcards } from './modules/Flashcards';
 import { Guided } from './modules/Guided';
+import { QCTrainer } from './modules/QCTrainer';
 import { Formulas } from './modules/Formulas';
 import { Library } from './modules/Library';
 import { Practice } from './modules/Practice';
@@ -50,7 +51,7 @@ const NAV = [
 ];
 
 /** Phase 1 trainers live under Practice in the nav. */
-const PRACTICE_PATHS = ['/practice', '/recognize', '/decode', '/method', '/shortcut', '/guided'];
+const PRACTICE_PATHS = ['/practice', '/recognize', '/decode', '/method', '/shortcut', '/guided', '/qc'];
 /** Phase 4 personalization pages live under Progress. */
 const PROGRESS_PATHS = ['/progress', '/next', '/quick'];
 
@@ -102,6 +103,9 @@ export function App() {
       break;
     case '/guided':
       view = <Guided key={routeKey} qid={route.params.get('q') ?? undefined} />;
+      break;
+    case '/qc':
+      view = <QCTrainer key={routeKey} initialTheme={route.params.get('theme') ?? undefined} />;
       break;
     case '/progress':
       view = <Progress key={routeKey} />;

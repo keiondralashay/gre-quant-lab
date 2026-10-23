@@ -268,4 +268,28 @@ export const VERIFY_B3: Record<string, () => Check> = {
     const sales = [120, 150, 90, 140];
     return idx(sales.indexOf(Math.min(...sales)), 4);
   },
+  // ---------- QC trainer expansion (sampled over a dense grid of allowed values) ----------
+  'qc-neg-cube': () => ({ qc: qcRelation(range(-20, -0.05, 0.05).map((x) => [x ** 2, x ** 3])) }),
+  'qc-zero-square': () => ({ qc: qcRelation(range(0, 20, 0.05).map((x) => [x ** 2, x])) }),
+  'qc-abs-neg': () => ({ qc: qcRelation(range(-20, -0.05, 0.05).map((x) => [Math.abs(x), -x])) }),
+  'qc-exp-gt1': () => ({ qc: qcRelation(range(1.01, 20, 0.03).map((x) => [x ** 3, x ** 2])) }),
+  'qc-exp-neg-frac': () => ({ qc: qcRelation(range(-0.99, -0.01, 0.01).map((x) => [x ** 3, x ** 2])) }),
+  'qc-frac-shift': () => ({ qc: qcRelation(range(0.01, 50, 0.07).map((x) => [x / (x + 1), (x + 1) / (x + 2)])) }),
+  'qc-expand-square': () => {
+    const s: [number, number][] = [];
+    for (const x of range(0.1, 10, 0.3)) for (const y of range(0.1, 10, 0.3)) s.push([(x + y) ** 2, x ** 2 + y ** 2]);
+    return { qc: qcRelation(s) };
+  },
+  'qc-overlap-ranges': () => {
+    const s: [number, number][] = [];
+    for (const x of range(3.05, 4.95, 0.05)) for (const y of range(4.05, 5.95, 0.05)) s.push([x, y]);
+    return { qc: qcRelation(s) };
+  },
+  'qc-integer-pin': () => ({ qc: qcRelation(range(-10, 10).filter((x) => x > 2 && x < 4).map((x) => [x, 3])) }),
+  'qc-xsq-9': () => ({ qc: qcRelation(range(-10, 10, 0.5).filter((x) => near(x * x, 9)).map((x) => [x, 2])) }),
+  'qc-xy-12': () => {
+    const s: [number, number][] = [];
+    for (const x of range(1, 12)) for (const y of range(1, 12)) if (x * y === 12) s.push([x, y]);
+    return { qc: qcRelation(s) };
+  },
 };

@@ -10,6 +10,8 @@ import { Explanation } from './Explanation';
 import { MathText } from './MathText';
 import { QuestionStem } from './QuestionStem';
 import { Feedback } from './ui';
+import { QC_MODEL_BY_QID } from '../data/qcModels';
+import { ValueTester } from './ValueTester';
 
 function emptyResponse(q: Question): Response {
   switch (q.format) {
@@ -43,6 +45,7 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
   const [invalid, setInvalid] = useState<string | null>(null);
   const [hintsShown, setHintsShown] = useState(0);
   const [decodeOpen, setDecodeOpen] = useState(false);
+  const [testerOpen, setTesterOpen] = useState(false);
   const [firstAttempt, setFirstAttempt] = useState<{ id: string; ts: number; ms: number; response: Response } | null>(null);
   const started = useRef(Date.now());
   const answerRef = useRef<HTMLDivElement>(null);
@@ -55,6 +58,7 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
     setInvalid(null);
     setHintsShown(0);
     setDecodeOpen(false);
+    setTesterOpen(false);
     setFirstAttempt(null);
     started.current = Date.now();
   }, [q]);
@@ -210,6 +214,11 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
               Decode This Question
             </button>
           )}
+          {QC_MODEL_BY_QID[q.id] && source !== 'qc-trainer' && (
+            <button type="button" className="btn" aria-expanded={testerOpen} onClick={() => setTesterOpen((o) => !o)}>
+              Test Different Values
+            </button>
+          )}
           {phase !== 'done' && (
             <a className="btn" href={href.guided(q.id)}>
               Walk Me Through It
@@ -217,6 +226,8 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
           )}
         </div>
       </div>
+
+      {testerOpen && QC_MODEL_BY_QID[q.id] && <ValueTester model={QC_MODEL_BY_QID[q.id]} quantityA={q.quantityA} quantityB={q.quantityB} />}
 
       {decodeOpen && phase !== 'done' && (
         <DecodePanel
