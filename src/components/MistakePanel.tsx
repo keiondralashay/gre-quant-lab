@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { MistakeType, Question } from '../data/types';
 import type { Response } from '../lib/grading';
 import { inferMistake, MISTAKE_DESCRIPTIONS, MISTAKE_LABELS, MISTAKE_TYPES, recommendation } from '../lib/mistakes';
-import { classifyAttempt, getProgress, useProgress, type Attempt } from '../lib/progress';
+import { classifyAttempt, getProgress, useProgress, type Attempt, type GuidedTrace } from '../lib/progress';
 
 /**
  * "Where did my thinking go wrong?" — shown after a missed question.
@@ -17,6 +17,7 @@ export function MistakePanel({
   paceMs,
   timeExpired,
   compact,
+  trace,
 }: {
   q: Question;
   attemptId: string;
@@ -25,12 +26,13 @@ export function MistakePanel({
   paceMs?: number;
   timeExpired?: boolean;
   compact?: boolean;
+  trace?: GuidedTrace;
 }) {
   const progress = useProgress();
   const existing = progress.classifications?.[attemptId];
   const inference = useMemo(
-    () => inferMistake({ q, response, attempt, history: getProgress().attempts.filter((a) => a.id !== attemptId), paceMs, timeExpired }),
-    [q, response, attempt, attemptId, paceMs, timeExpired],
+    () => inferMistake({ q, response, attempt, history: getProgress().attempts.filter((a) => a.id !== attemptId), paceMs, timeExpired, trace }),
+    [q, response, attempt, attemptId, paceMs, timeExpired, trace],
   );
   const [choosing, setChoosing] = useState(false);
 

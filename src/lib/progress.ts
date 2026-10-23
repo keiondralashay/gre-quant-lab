@@ -21,7 +21,11 @@ export type AttemptKind =
   | 'formula-check'
   | 'clue'
   // Phase 4
-  | 'clue-spot';
+  | 'clue-spot'
+  // Phase 3 (corrective): one graded step of "Walk Me Through It"
+  | 'guided-step'
+  // Quantitative Comparison trainer exercises
+  | 'qc-drill';
 export type AttemptResult = 'correct' | 'partial' | 'incorrect';
 
 export interface Attempt {
@@ -53,7 +57,30 @@ export interface Attempt {
   unanswered?: boolean;
   /** Timed/speed/quick session this attempt belongs to. */
   sessionId?: string;
+  /** Guided walkthrough trace, stored on the final answer of a "Walk Me Through It" run. */
+  trace?: GuidedTrace;
   ts: number;
+}
+
+/** One step of a guided walkthrough, as the learner experienced it. */
+export interface TraceStep {
+  /** Step id: asking, given, components, type, first, track, op, next:<id>, final. */
+  id: string;
+  /** False for ungraded self-check steps (basic guides). */
+  graded: boolean;
+  firstTry: boolean;
+  tries: number;
+  hints: number;
+  /** The correct response was shown instead of being found. */
+  revealed: boolean;
+  /** What the learner first answered (option text, number, or field values). */
+  firstResponse?: string;
+}
+
+export interface GuidedTrace {
+  guide: 'full' | 'basic';
+  track?: 'fast' | 'long';
+  steps: TraceStep[];
 }
 
 /**
@@ -253,7 +280,7 @@ export interface Summary {
 }
 
 export function summarize(attempts: Attempt[]): Summary {
-  const kinds: AttemptKind[] = ['recognition', 'first-step', 'strategy', 'answer', 'decode-step', 'decode-exercise', 'lesson-check', 'shortcut-drill', 'formula-check', 'clue', 'clue-spot'];
+  const kinds: AttemptKind[] = ['recognition', 'first-step', 'strategy', 'answer', 'decode-step', 'decode-exercise', 'lesson-check', 'shortcut-drill', 'formula-check', 'clue', 'clue-spot', 'guided-step', 'qc-drill'];
   const byKind = Object.fromEntries(kinds.map((k) => [k, tally(attempts.filter((a) => a.kind === k))])) as Record<AttemptKind, Tally>;
 
   const byCategory: Partial<Record<Category, Tally>> = {};

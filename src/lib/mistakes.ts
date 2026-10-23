@@ -1,7 +1,7 @@
 import { CATEGORY_LESSON, href, primaryLesson } from '../data/links';
 import type { Answer, MistakeType, Question } from '../data/types';
 import { parseRational, rationalEquals, type Response } from './grading';
-import type { Attempt } from './progress';
+import type { Attempt, GuidedTrace } from './progress';
 
 export const MISTAKE_LABELS: Record<MistakeType, string> = {
   recognition: 'Recognition error',
@@ -92,6 +92,50 @@ export interface Inference {
 
 const RECENT_MS = 60 * 60 * 1000;
 
+/** What a missed walkthrough step says about the learner's thinking. */
+export const STEP_MISTAKE: Record<string, { type: MistakeType; what: string }> = {
+  asking: { type: 'reading', what: 'identifying what the question asks' },
+  given: { type: 'reading', what: 'separating what is given from what is assumed' },
+  components: { type: 'concept', what: 'what the symbols, coefficients, or measurements mean' },
+  type: { type: 'recognition', what: 'naming the problem type' },
+  first: { type: 'strategy', what: 'choosing the first step' },
+  op: { type: 'strategy', what: 'choosing the operation or formula' },
+  next: { type: 'calculation', what: 'an intermediate calculation' },
+};
+
+const stepKey = (id: string) => (id.startsWith('next:') ? 'next' : id);
+
+/** Graded steps where the learner needed more than one try (or had the answer shown). */
+export function strugglesIn(trace: GuidedTrace) {
+  return trace.steps.filter((s) => s.graded && s.id !== 'final' && (!s.firstTry || s.revealed) && STEP_MISTAKE[stepKey(s.id)]);
+}
+
+/**
+ * Diagnose a walkthrough from its trace. A single kind of struggle is a specific
+ * recorded signal (strong); several kinds are ambiguous, so the learner is asked
+ * (suggested). If every graded step was right first time and only the final
+ * answer was missed, the slip happened at the very end (suggested: careless).
+ */
+export function inferFromTrace(trace: GuidedTrace, finalCorrect: boolean): Inference | null {
+  const struggles = strugglesIn(trace);
+  const types = [...new Set(struggles.map((s) => STEP_MISTAKE[stepKey(s.id)].type))];
+  if (types.length === 1) {
+    const whats = [...new Set(struggles.map((s) => STEP_MISTAKE[stepKey(s.id)].what))];
+    return { type: types[0], evidence: `In the walkthrough you needed help with ${whats.join(' and ')}.`, strength: 'strong' };
+  }
+  if (types.length > 1) {
+    const first = struggles[0];
+    return {
+      type: STEP_MISTAKE[stepKey(first.id)].type,
+      evidence: `You needed help at several steps (${struggles.map((s) => STEP_MISTAKE[stepKey(s.id)].what).join('; ')}). The first was ${STEP_MISTAKE[stepKey(first.id)].what}.`,
+      strength: 'suggested',
+    };
+  }
+  const graded = trace.steps.filter((s) => s.graded && s.id !== 'final');
+  if (!finalCorrect && graded.length >= 3) return { type: 'careless', evidence: 'Every guided step was right on the first try, but the final answer was not.', strength: 'suggested' };
+  return null;
+}
+
 /**
  * Infer why a question was missed from concrete evidence only. Returns null when
  * nothing recorded supports a conclusion; the UI then asks the learner.
@@ -104,8 +148,10 @@ export function inferMistake(args: {
   /** Target seconds for this question in a timed session (if any). */
   paceMs?: number;
   timeExpired?: boolean;
+  /** Present when the miss happened inside "Walk Me Through It". */
+  trace?: GuidedTrace;
 }): Inference | null {
-  const { q, response, attempt, history, paceMs, timeExpired } = args;
+  const { q, response, attempt, history, paceMs, timeExpired, trace } = args;
   if (attempt.unanswered) {
     if (timeExpired) return { type: 'timing', evidence: 'Time ran out before this question was answered.', strength: 'strong' };
     return null; // skipped: the reason is unknown
@@ -113,6 +159,10 @@ export function inferMistake(args: {
   if (response) {
     const d = matchDistractor(q, response);
     if (d) return { type: d.type, evidence: `Your answer matches a known trap: ${d.note}`, strength: 'strong' };
+  }
+  if (trace) {
+    const t = inferFromTrace(trace, false);
+    if (t) return t;
   }
   const inWindow = (h: Attempt) => h.ts <= attempt.ts && attempt.ts - h.ts < RECENT_MS;
   const recent = history.filter((h) => h.ref === q.id && inWindow(h));
@@ -137,8 +187,7 @@ export function recommendation(type: MistakeType, q: Question): { label: string;
     case 'strategy':
       return { label: 'Choose the Fastest Method', href: `#/method?cat=${q.category}`, why: 'Practice picking a method before calculating.' };
     case 'calculation':
-      // Guided Problem Solving is a Phase 3 feature that has not been built; this is the closest working activity.
-      return { label: 'Solve step by step (Topic Practice)', href: href.lessonPractice(lesson, 'solve'), why: 'Re-solve similar questions slowly, using hints and Decode This Question to check each step.' };
+      return { label: 'Walk Me Through It', href: href.guided(q.id), why: 'Re-solve this exact question one checked step at a time to find where the arithmetic or algebra slips.' };
     case 'reading':
       return { label: 'Spot the Clue', href: '#/clues', why: 'Practice translating wording and noticing restrictions.' };
     case 'careless':

@@ -4,6 +4,7 @@ import { QuestionSolver } from '../components/QuestionSolver';
 import { Tag, DIFFICULTY_LABEL, DIFFICULTY_TONE } from '../components/ui';
 import { QUESTION_BY_ID } from '../data/questions';
 import { CATEGORIES } from '../data/taxonomy';
+import { href } from '../data/links';
 import type { MistakeType } from '../data/types';
 import { MODE_LABELS, reviewQueue, type QueueEntry } from '../lib/analytics';
 import { similarTo } from '../lib/deck';
@@ -132,6 +133,9 @@ function QueueCard({ e, onStart }: { e: QueueEntry; onStart: (a: Activity) => vo
         <button className="btn" onClick={() => onStart({ qid: e.q.id, kind: 'recognize', step: 'type' })}>
           Recognize Only
         </button>
+        <a className={`btn ${e.types.includes('calculation') ? 'btn-primary' : ''}`} href={href.guided(e.q.id)}>
+          Walk Me Through It
+        </a>
         {lastFailed?.id && !e.types.length && (
           <button className="btn-link" onClick={() => setClassifying((c) => !c)}>
             {classifying ? 'Hide' : 'Why did I miss it?'}

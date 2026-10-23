@@ -292,4 +292,5 @@ export const href = {
   lessonPractice: (id: string, mode?: string) => `#/practice?lesson=${id}${mode ? `&mode=${mode}` : ''}`,
   shortcut: (id: string, practice = false) => `#/vault/${id}${practice ? '?practice=1' : ''}`,
   formula: (id: string) => `#/formulas/${id}`,
+  guided: (qid: string) => `#/guided?q=${qid}`,
 };

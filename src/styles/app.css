@@ -1656,3 +1656,110 @@ a.practice-mode:hover {
     top: 0;
   }
 }
+
+/* ---------- Phase 3 corrective: Walk Me Through It ---------- */
+.guided-trail {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+  display: grid;
+  gap: 8px;
+}
+.guided-done {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.guided-mark {
+  flex: none;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.guided-mark.ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.guided-step {
+  margin-top: 12px;
+}
+.guided-step-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+.guided-num {
+  color: var(--accent);
+  font-weight: 700;
+}
+.guided-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-top: 8px;
+}
+.guided-fields label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.guided-fields input {
+  width: 8rem;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.guided-fields label.bad input {
+  border-color: var(--bad);
+  background: var(--bad-soft);
+}
+.guided-reveal {
+  margin: 8px 0;
+  padding-left: 1.2em;
+}
+.guided-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 8px;
+}
+.guided-list a {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+.guided-list a:hover,
+.guided-list a:focus-visible {
+  border-color: var(--accent);
+}
+.btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.guided-other {
+  margin-top: 20px;
+}

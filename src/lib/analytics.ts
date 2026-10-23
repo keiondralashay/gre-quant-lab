@@ -61,6 +61,8 @@ export const MODE_LABELS: Record<string, string> = {
   'review-similar': 'Review: similar',
   'review-recognize': 'Review: recognize only',
   quick: 'Practice What I Need',
+  guided: 'Walk Me Through It',
+  'guided-other-track': 'Walk Me Through It (second path)',
 };
 
 export function applyFilter(attempts: Attempt[], f: Filter, now = Date.now()) {

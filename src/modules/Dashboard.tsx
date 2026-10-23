@@ -18,7 +18,7 @@ export const MODULES: ModuleCard[] = [
   { n: 2, title: 'Decode the Equation', blurb: 'Identify a, b, c, slopes, bases, numerators, and every symbol.', href: '#/decode', phase: 1 },
   { n: 3, title: 'Choose the Fastest Method', blurb: '“What’s the fastest way?” Pick a strategy before solving.', href: '#/method', phase: 1 },
   { n: 4, title: 'Shortcut vs. Traditional', blurb: 'The fast method first, the long way on request, and when NOT to use the shortcut.', href: '#/shortcut', phase: 1 },
-  { n: 5, title: 'Guided Problem Solving', blurb: 'Step-by-step tutor with hints.', phase: 3 },
+  { n: 5, title: 'Walk Me Through It', blurb: 'Eight checked steps from “what is asked” to the final answer, with hints and retries.', href: '#/guided', phase: 3 },
   { n: 6, title: 'GRE Practice Questions', blurb: 'Full test-style sets in all four formats.', phase: 3 },
   { n: 7, title: 'Quantitative Comparison', blurb: 'QC trainer with “Test Different Values”.', phase: 3 },
   { n: 8, title: 'GRE Topic Library', blurb: 'Every official content area in short, practice-linked lessons.', href: '#/library', phase: 2 },

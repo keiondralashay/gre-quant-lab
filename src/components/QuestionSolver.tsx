@@ -210,6 +210,11 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
               Decode This Question
             </button>
           )}
+          {phase !== 'done' && (
+            <a className="btn" href={href.guided(q.id)}>
+              Walk Me Through It
+            </a>
+          )}
         </div>
       </div>
 
@@ -259,6 +264,11 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
                 <a className="link-btn" href={href.lesson(primaryLesson(q.id) ?? CATEGORY_LESSON[q.category])}>
                   Review This Concept →
                 </a>
+                {source !== 'guided' && (
+                  <a className="link-btn" href={href.guided(q.id)}>
+                    Walk Me Through It →
+                  </a>
+                )}
               </p>
             )}
           </Feedback>

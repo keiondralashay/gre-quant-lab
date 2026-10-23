@@ -169,7 +169,7 @@ describe('Dashboard and persistence', () => {
 
   it('planned modules are not clickable links', () => {
     render(<Dashboard />);
-    const locked = screen.getByText('Guided Problem Solving').closest('.module-card')!;
+    const locked = screen.getByText('Personalized Review').closest('.module-card')!;
     expect(locked.tagName).toBe('DIV');
     expect(locked).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText('Recognize the Problem').closest('a')).toHaveAttribute('href', '#/recognize');
