@@ -1,0 +1,36 @@
+import { R, type StepChecks } from './types';
+
+const hyp = (a: number, b: number) => Math.hypot(a, b);
+
+export const GEOMETRY_B: StepChecks = {
+  'ge-third-side-qc': { 'op.a': 9 - 5, 'op.b': 9 + 5 },
+  'p2-midpoint': { 'op.x': (-3 + 7) / 2, 'op.y': (8 + -2) / 2, s: 5 },
+  'p2-parallel-angles': { x: (180 - 30) / 5 },
+  'p2-octagon-angle': { n: 8, op: 360 / 8, int: 180 - 360 / 8, L1: (8 - 2) * 180 },
+  'p2-rect-area-qc': { sum: 20 / 2, 'sq.a': 5 * 5, 'thin.a': 9 * 1 },
+  'b3-distance-pts': { 'op.x': 5 - -1, 'op.y': 6 - -2, d: hyp(6, 8) },
+  'b3-vertical-angles': { x: 75 / 3 },
+  'b3-alt-interior-qc': { x: (30 + 20) / 2 },
+  'b3-isosceles-vertex': { op: 2 * 50, v: 180 - 100 },
+  'b3-ladder': { h1: Math.sqrt(13 ** 2 - 5 ** 2), h2: Math.sqrt(13 ** 2 - 12 ** 2), drop: 12 - 5 },
+  'b3-45-hyp': { x: (10 * Math.SQRT2) / Math.SQRT2 },
+  'b3-similar-area': { big: (18 * 25) / 9 },
+  'b3-parallel-segment': { ab: 4 + 6, k: R(10, 4), bc: R(25, 2) },
+  'b3-circle-c': { k: 2 * 7 },
+  'b3-polygon-sides': { op: 1440 / 180, n: 1440 / 180 + 2 },
+  'b3-pentagon-qc': { n: 5, op: 360 / 5, int: 180 - 72 },
+  'b3-rect-perimeter': { op: 8 + 5, p: 2 * 13 },
+  'b3-square-area': { s: 36 / 4, a: 81 },
+  'b3-cube-sa': { s: Math.cbrt(64), sa: 6 * 16 },
+  'b3-coord-triangle-perim': { 'op.a': 6, 'op.b': 8, h: hyp(6, 8), p: 6 + 8 + 10 },
+  'b3-parallelogram-coords': { 'op.b': 4 - 0, 'op.h': 3, a: 12, op: 6 * 3, tri: 0.5 * 2 * 3 },
+  'b4-supplementary': { x: (180 - 30) / 5 },
+  'b4-isosceles-angle': { op: 180 - 40, v: 140 / 2 },
+  'b4-306090-area': { x: 10 / 2 },
+  'b4-similar-area': { big: (20 * 9) / 4 },
+  'b4-circle-inscribed': { r2: (Math.hypot(6, 6) / 2) ** 2 },
+  'b4-hexagon-angles': { n: 6, v: (6 - 2) * 180 },
+  'b4-rect-perimeter': { w: 48 / 8, p: 2 * (8 + 6) },
+  'b4-cube-surface': { face: 4 * 4, sa: 6 * 16 },
+  'b4-triangle-coords': { h: 6, a: 0.5 * 8 * 6 },
+};
