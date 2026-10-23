@@ -113,6 +113,16 @@ export interface SessionRecord {
   timeLimitMs?: number;
   status: 'completed' | 'time-expired' | 'abandoned';
   questions: SessionQuestion[];
+  /** Unofficial adaptive practice: which section this was, and (for Section 2) the difficulty tier used. */
+  adaptive?: AdaptiveInfo;
+}
+
+export interface AdaptiveInfo {
+  stage: 1 | 2;
+  tier?: 'easier' | 'medium' | 'harder';
+  /** Section 1 correct answers that chose the tier. */
+  s1Correct?: number;
+  s1Id?: string;
 }
 
 /** Flashcard review state (Phase 2). */

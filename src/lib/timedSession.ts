@@ -2,7 +2,7 @@ import { QUESTION_BY_ID, QUESTIONS } from '../data/questions';
 import type { Area, Question } from '../data/types';
 import { grade, type Response } from './grading';
 import { serializeAnswer, serializeResponse } from './mistakes';
-import type { SessionQuestion, SessionRecord } from './progress';
+import type { AdaptiveInfo, SessionQuestion, SessionRecord } from './progress';
 import { shuffle } from './random';
 
 /**
@@ -34,6 +34,7 @@ export interface ActiveTimed {
   deadline: number;
   /** When the current question became visible. */
   visibleSince: number;
+  adaptive?: AdaptiveInfo;
 }
 
 /** Mixed topics and formats; every content area appears when the set has ≥ 4 questions. */
@@ -49,12 +50,13 @@ export function pickQuestions(count: number, rand: () => number = Math.random): 
   return shuffle(chosen.slice(0, count), rand);
 }
 
-export function createSession(opts: { label: string; count: number; minutes: number; now?: number; rand?: () => number; id?: string }): ActiveTimed {
+export function createSession(opts: { label: string; count: number; minutes: number; now?: number; rand?: () => number; id?: string; questionIds?: string[]; adaptive?: AdaptiveInfo }): ActiveTimed {
   const now = opts.now ?? Date.now();
   return {
     id: opts.id ?? `s${now.toString(36)}`,
     label: opts.label,
-    questionIds: pickQuestions(opts.count, opts.rand).map((q) => q.id),
+    adaptive: opts.adaptive,
+    questionIds: opts.questionIds ?? pickQuestions(opts.count, opts.rand).map((q) => q.id),
     responses: {},
     marked: [],
     times: {},
@@ -96,9 +98,75 @@ export function finishSession(s: ActiveTimed, status: 'completed' | 'time-expire
   });
   const questions: SessionQuestion[] = attempts.map((a) => ({ id: a.q.id, ms: a.ms, selected: a.selected, correct: a.result === 'correct', unanswered: a.unanswered, marked: closed.marked.includes(a.q.id) }));
   return {
-    record: { id: s.id, kind: 'timed', label: s.label, startedAt: s.startedAt, endedAt: Math.min(now, s.deadline), timeLimitMs: s.deadline - s.startedAt, status, questions },
+    record: { id: s.id, kind: 'timed', label: s.label, startedAt: s.startedAt, endedAt: Math.min(now, s.deadline), timeLimitMs: s.deadline - s.startedAt, status, questions, ...(s.adaptive ? { adaptive: s.adaptive } : {}) },
     attempts,
   };
+}
+
+// ---------------- Unofficial adaptive practice ----------------
+
+/**
+ * An UNOFFICIAL, documented imitation of section-level adaptation. ETS does not
+ * publish its algorithm; this one is ours and produces no score.
+ *  - Section 1: 12 questions, 21 minutes, a fixed medium mix (3 foundational, 6 moderate, 3 challenging).
+ *  - Section 2: 15 questions, 26 minutes. Its difficulty mix is chosen by Section 1 correct answers:
+ *      8–12 correct → harder (2 / 5 / 8), 5–7 → medium (4 / 7 / 4), 0–4 → easier (7 / 6 / 2).
+ *  - Section 2 never repeats a Section 1 question.
+ */
+export type Tier = 'easier' | 'medium' | 'harder';
+type Mix = Record<1 | 2 | 3, number>;
+export const ADAPTIVE = {
+  s1: { count: 12, minutes: 21, mix: { 1: 3, 2: 6, 3: 3 } as Mix },
+  s2: { count: 15, minutes: 26, mix: { easier: { 1: 7, 2: 6, 3: 2 }, medium: { 1: 4, 2: 7, 3: 4 }, harder: { 1: 2, 2: 5, 3: 8 } } as Record<Tier, Mix> },
+};
+export const TIER_LABEL: Record<Tier, string> = { easier: 'easier', medium: 'medium', harder: 'harder' };
+
+export function tierFor(s1Correct: number): Tier {
+  return s1Correct >= 8 ? 'harder' : s1Correct >= 5 ? 'medium' : 'easier';
+}
+
+/** Pick questions to match a difficulty mix, covering every content area where possible. */
+export function pickByMix(mix: Mix, exclude: string[] = [], rand: () => number = Math.random): Question[] {
+  const pool = shuffle(
+    QUESTIONS.filter((q) => !exclude.includes(q.id)),
+    rand,
+  );
+  const chosen: Question[] = [];
+  for (const d of [1, 2, 3] as const) {
+    const ofD = pool.filter((q) => q.difficulty === d);
+    const picked: Question[] = [];
+    // First one per area (so each section mixes topics), then fill.
+    for (const a of ['arithmetic', 'algebra', 'geometry', 'data'] as Area[]) {
+      if (picked.length >= mix[d]) break;
+      const q = ofD.find((x) => x.area === a && !picked.includes(x));
+      if (q) picked.push(q);
+    }
+    for (const q of ofD) {
+      if (picked.length >= mix[d]) break;
+      if (!picked.includes(q)) picked.push(q);
+    }
+    chosen.push(...picked);
+  }
+  return shuffle(chosen, rand);
+}
+
+export function startAdaptiveS1(now = Date.now(), rand: () => number = Math.random): ActiveTimed {
+  const { count, minutes, mix } = ADAPTIVE.s1;
+  return createSession({ label: `Unofficial adaptive practice: Section 1 (${count} questions, ${minutes} min)`, count, minutes, now, questionIds: pickByMix(mix, [], rand).map((q) => q.id), adaptive: { stage: 1 } });
+}
+
+export function startAdaptiveS2(s1: SessionRecord, now = Date.now(), rand: () => number = Math.random): ActiveTimed {
+  const s1Correct = s1.questions.filter((q) => q.correct).length;
+  const tier = tierFor(s1Correct);
+  const { count, minutes, mix } = ADAPTIVE.s2;
+  return createSession({
+    label: `Unofficial adaptive practice: Section 2, ${TIER_LABEL[tier]} (${count} questions, ${minutes} min)`,
+    count,
+    minutes,
+    now,
+    questionIds: pickByMix(mix[tier], s1.questions.map((q) => q.id), rand).map((q) => q.id),
+    adaptive: { stage: 2, tier, s1Correct, s1Id: s1.id },
+  });
 }
 
 export interface TimeReport {

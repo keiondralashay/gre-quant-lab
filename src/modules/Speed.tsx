@@ -10,7 +10,7 @@ import type { Question, Verdict } from '../data/types';
 import { classifyAttempt, getProgress, newId, recordAttempt, saveSession, setActiveSession, useProgress, type SessionRecord } from '../lib/progress';
 import { shuffle } from '../lib/random';
 import { formatClock, useCountdown } from '../lib/timer';
-import { answeredCount, createSession, finishSession, goTo, OFFICIAL_PACE_SEC, OFFICIAL_PRESETS, SET_SIZES, type ActiveTimed } from '../lib/timedSession';
+import { ADAPTIVE, answeredCount, createSession, finishSession, goTo, OFFICIAL_PACE_SEC, OFFICIAL_PRESETS, SET_SIZES, startAdaptiveS1, type ActiveTimed } from '../lib/timedSession';
 import { recognitionOptions } from './Recognize';
 import { TimedResults } from './TimedResults';
 
@@ -392,11 +392,11 @@ function Timed() {
   const progress = useProgress();
   const active = progress.activeSession as ActiveTimed | undefined;
   const [finishedId, setFinishedId] = useState<string | null>(null);
+  if (active) return <TimedRun s={active} onFinish={setFinishedId} />;
   if (finishedId) {
     const rec = (progress.sessions ?? []).find((s) => s.id === finishedId);
     if (rec) return <TimedResults rec={rec} />;
   }
-  if (active) return <TimedRun s={active} onFinish={setFinishedId} />;
   return <TimedSetup />;
 }
 
@@ -419,7 +419,7 @@ function TimedSetup() {
       <section className="card">
         <h3>Official-style section</h3>
         <p className="note">
-          Length and time limit follow ETS’s current GRE structure: Quantitative Reasoning has a 12-question, 21-minute section and a 15-question, 26-minute section. On the real test the second section adapts to your performance and an on-screen calculator is available; this practice version does neither.
+          Length and time limit follow ETS’s current GRE structure: Quantitative Reasoning has a 12-question, 21-minute section and a 15-question, 26-minute section. On the real test the second section adapts to your performance; these two presets do not (see the unofficial adaptive option below). The on-screen calculator (Calc) is available, as on the test.
         </p>
         <div className="actions">
           {OFFICIAL_PRESETS.map((p) => (
@@ -428,6 +428,15 @@ function TimedSetup() {
             </button>
           ))}
         </div>
+      </section>
+      <section className="card">
+        <h3>Unofficial adaptive practice (two sections)</h3>
+        <p className="note">
+          <strong>Unofficial.</strong> ETS does not publish how the real test adapts, and this mode produces no score. Section 1 has {ADAPTIVE.s1.count} questions in {ADAPTIVE.s1.minutes} minutes with a fixed medium mix (3 foundational, 6 moderate, 3 challenging). Your Section 1 correct count then sets Section 2 ({ADAPTIVE.s2.count} questions, {ADAPTIVE.s2.minutes} minutes): 8–12 correct → a harder mix (2 / 5 / 8), 5–7 → medium (4 / 7 / 4), 0–4 → easier (7 / 6 / 2). Section 2 never repeats a Section 1 question.
+        </p>
+        <button className="btn btn-primary" onClick={() => setActiveSession(startAdaptiveS1())}>
+          Start Section 1
+        </button>
       </section>
       <section className="card">
         <h3>Practice set</h3>

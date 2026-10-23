@@ -8,7 +8,8 @@ import { CATEGORIES } from '../data/taxonomy';
 import type { SessionRecord } from '../lib/progress';
 import { deserializeResponse } from '../lib/mistakes';
 import { formatClock } from '../lib/timer';
-import { timeReport } from '../lib/timedSession';
+import { ADAPTIVE, startAdaptiveS2, tierFor, timeReport } from '../lib/timedSession';
+import { setActiveSession, useProgress } from '../lib/progress';
 
 const sec = (ms: number) => `${Math.round(ms / 1000)}s`;
 
@@ -52,6 +53,8 @@ export function TimedResults({ rec }: { rec: SessionRecord }) {
           </div>
         </div>
       </section>
+
+      {rec.adaptive && <AdaptiveNext rec={rec} />}
 
       <section className="card">
         <h3>Time management</h3>
@@ -161,5 +164,45 @@ export function TimedResults({ rec }: { rec: SessionRecord }) {
         </a>
       </div>
     </div>
+  );
+}
+
+/** Unofficial adaptive practice: explain the routing decision and offer Section 2. No score is shown or implied. */
+function AdaptiveNext({ rec }: { rec: SessionRecord }) {
+  const progress = useProgress();
+  const a = rec.adaptive!;
+  if (a.stage === 2) {
+    return (
+      <section className="card">
+        <h3>Unofficial adaptive practice: Section 2</h3>
+        <p>
+          This section used the <strong>{a.tier}</strong> mix because you answered {a.s1Correct} of {ADAPTIVE.s1.count} Section 1 questions correctly. This mode does not produce a GRE score, and the routing rule is this app’s own, not ETS’s.
+        </p>
+      </section>
+    );
+  }
+  const correct = rec.questions.filter((q) => q.correct).length;
+  const tier = tierFor(correct);
+  const started = (progress.sessions ?? []).some((s) => s.adaptive?.s1Id === rec.id) || (progress.activeSession as { adaptive?: { s1Id?: string } } | undefined)?.adaptive?.s1Id === rec.id;
+  return (
+    <section className="card">
+      <h3>Unofficial adaptive practice: next section</h3>
+      <p>
+        You answered {correct} of {rec.questions.length} correctly, so Section 2 will use the <strong>{tier}</strong> difficulty mix ({ADAPTIVE.s2.count} questions, {ADAPTIVE.s2.minutes} minutes). No score is calculated.
+      </p>
+      {started ? (
+        <p className="note">Section 2 for this attempt has already been started.</p>
+      ) : (
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            setActiveSession(startAdaptiveS2(rec));
+            window.location.hash = '#/speed?mode=timed';
+          }}
+        >
+          Start Section 2
+        </button>
+      )}
+    </section>
   );
 }
