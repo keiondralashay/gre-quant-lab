@@ -5,7 +5,7 @@ import { QUESTION_BY_ID } from '../data/questions';
 import { inferFromTrace, recommendation } from '../lib/mistakes';
 import { classifyAttempt, getProgress, recordAttempt, resetProgress, type GuidedTrace } from '../lib/progress';
 import { Review } from '../modules/Review';
-import { Guided } from '../modules/Guided';
+import { Guided, GuidedRun } from '../modules/Guided';
 import { MathText } from '../components/MathText';
 
 beforeEach(() => resetProgress());
@@ -38,9 +38,9 @@ describe('Walk Me Through It', () => {
     render(<Guided qid={q.id} />);
 
     // Step 1 only: later steps are not in the DOM.
-    expect(screen.getByText(/What is the question asking\?/)).toBeInTheDocument();
+    expect(screen.getByText(/What am I solving for\?/)).toBeInTheDocument();
     expect(screen.queryByText(/What information is given\?/)).toBeNull();
-    expect(screen.queryByText(/Final answer/)).toBeNull();
+    expect(screen.queryByText(/What is the final answer\?/)).toBeNull();
 
     // Step 1: wrong first, which shows hint 1 and eliminates the option; then correct.
     const wrongAsk = q.decode.askingOptions.find((_, i) => i !== q.decode.askingCorrect)!;
@@ -101,7 +101,7 @@ describe('Walk Me Through It', () => {
     await user.click(must(button('Continue →', current())));
 
     // Step 8: final answer, wrong then right.
-    expect(screen.getByText('Final answer')).toBeInTheDocument();
+    expect(screen.getByText('What is the final answer?')).toBeInTheDocument();
     await user.click(screen.getByRole('radio', { name: /−5/ }));
     await user.click(must(button('Submit Final Answer')));
     expect(screen.getByText(/Not correct yet/)).toBeInTheDocument();
@@ -128,20 +128,39 @@ describe('Walk Me Through It', () => {
     expect(getProgress().classifications ?? {}).toEqual({});
     // The traditional path is done; the fast path can be walked too.
     expect(must(button(/Walk the fast path too/))).toBeInTheDocument();
+    // Step 9: the fastest valid approach, graded; the worked explanation waits until it is answered.
+    expect(screen.getByText('Is there a faster valid approach?')).toBeInTheDocument();
+    expect(screen.queryByText('TYPE')).toBeNull();
+    const best = q.method.options.find((o) => o.verdict === 'best')!;
+    const { STRATEGIES } = await import('../data/taxonomy');
+    await user.click(must(button(STRATEGIES[best.strategy], current())));
+    await user.click(must(button('Continue →', current())));
+    expect(getProgress().attempts.find((a) => a.ref === `${q.id}:faster`)).toMatchObject({ kind: 'guided-step', result: 'correct' });
+    expect(screen.getByText('TYPE')).toBeInTheDocument();
   });
 
-  it('uses a labeled basic guide when no full guide exists, with self-checks not graded', async () => {
+  it('basic guides (questions without an authored guide) grade the given-information step', async () => {
     const user = userEvent.setup();
-    const q = Object.values(QUESTION_BY_ID).find((x) => !GUIDE_BY_QID[x.id] && x.format === 'numeric')!;
-    render(<Guided qid={q.id} />);
+    // A copy under an id with no authored guide exercises the fallback.
+    const q = { ...QUESTION_BY_ID['ar-pct-sale'], id: 'tmp-basic' };
+    render(<GuidedRun q={q} />);
     expect(screen.getByText('Basic guide')).toBeInTheDocument();
     await user.click(optionByText(current(), q.decode.askingOptions[q.decode.askingCorrect]));
     await user.click(must(button('Continue →', current())));
-    expect(within(current()).getByText('Self-check')).toBeInTheDocument();
-    await user.click(must(button(/compare/, current())));
-    for (const g of q.decode.given) expect(within(current()).getByText((_, el) => el?.tagName === 'LI' && el.textContent === render(<MathText text={g} />).container.textContent)).toBeInTheDocument();
+    // Step 2 is graded: the target itself is offered as a trap.
+    const trap = `${q.decode.askingOptions[q.decode.askingCorrect]} (already stated)`;
+    await user.click(optionByText(current(), trap));
+    await user.click(must(button('Check', current())));
+    expect(within(current()).getByText(/1 selected statement is not given/)).toBeInTheDocument();
+    await user.click(optionByText(current(), trap));
+    for (const g of q.decode.given) await user.click(optionByText(current(), g));
+    await user.click(must(button('Check', current())));
     await user.click(must(button('Continue →', current())));
-    expect(getProgress().attempts.filter((a) => a.kind === 'guided-step').map((a) => a.ref)).toEqual([`${q.id}:asking`]);
+    expect(within(current()).getByText('Self-check')).toBeInTheDocument();
+    expect(getProgress().attempts.filter((a) => a.kind === 'guided-step').map((a) => [a.ref, a.result])).toEqual([
+      ['tmp-basic:asking', 'correct'],
+      ['tmp-basic:given', 'incorrect'],
+    ]);
   });
 
   it('shows a chooser with every full guide when no question is given', () => {

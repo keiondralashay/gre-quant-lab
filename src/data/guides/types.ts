@@ -4,7 +4,7 @@
  * supplies the graded steps that need per-question authoring.
  */
 export type GuideStep =
-  | { id: string; kind: 'choice'; prompt: string; options: string[]; answer: number; hints: string[]; explain: string }
+  | { id: string; kind: 'choice'; prompt: string; options: string[]; answer: number; hints: string[]; explain: string; /** Other options that are equally valid. */ accept?: number[] }
   | { id: string; kind: 'number'; prompt: string; answer: string; hints: string[]; explain: string; unit?: string }
   | { id: string; kind: 'fields'; prompt: string; fields: { id: string; label: string; answer: string }[]; hints: string[]; explain: string };
 

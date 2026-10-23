@@ -101,6 +101,7 @@ export const STEP_MISTAKE: Record<string, { type: MistakeType; what: string }> =
   first: { type: 'strategy', what: 'choosing the first step' },
   op: { type: 'strategy', what: 'choosing the operation or formula' },
   next: { type: 'calculation', what: 'an intermediate calculation' },
+  faster: { type: 'strategy', what: 'recognizing the fastest valid approach' },
 };
 
 const stepKey = (id: string) => (id.startsWith('next:') ? 'next' : id);

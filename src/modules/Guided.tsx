@@ -30,7 +30,7 @@ export type RunStep =
   | { id: string; kind: 'self'; prompt: string; reveal: string[] };
 
 const fromGuide = (s: GuideStep, id = s.id): RunStep =>
-  s.kind === 'choice' ? { id, kind: 'choice', prompt: s.prompt, options: s.options, answers: [s.answer], hints: s.hints, explain: s.explain } : { ...s, id };
+  s.kind === 'choice' ? { id, kind: 'choice', prompt: s.prompt, options: s.options, answers: [s.answer, ...(s.accept ?? [])], hints: s.hints, explain: s.explain } : { ...s, id };
 
 export const sameNumber = (a: string, b: string) => {
   const x = parseRational(a);
@@ -44,7 +44,7 @@ export function openingSteps(q: Question, guide: Guide | undefined, rand: () => 
   const restrictions = q.decode.restrictions && !/^none/i.test(q.decode.restrictions) ? [`Restriction to watch: ${q.decode.restrictions}`] : [];
   return [
     {
-      title: 'What is the question asking?',
+      title: 'What am I solving for?',
       step: {
         id: 'asking',
         kind: 'choice',
@@ -59,10 +59,10 @@ export function openingSteps(q: Question, guide: Guide | undefined, rand: () => 
       title: 'What information is given?',
       step: guide
         ? { id: 'given', kind: 'multi', prompt: 'Select every statement that is actually given. Leave out anything that is only assumed.', options: guide.given.options, correct: guide.given.correct, hints: ['Look for each statement word for word in the question.', 'If you would have to work something out, it is not given.'], explain: guide.given.explain }
-        : { id: 'given', kind: 'self', prompt: 'List everything the question gives you (on paper or in your head), then compare.', reveal: [...q.decode.given, ...restrictions] },
+        : basicGiven(q, rand),
     },
     {
-      title: 'What do the symbols, variables, or measurements represent?',
+      title: 'What do the mathematical components mean?',
       step: guide ? fromGuide(guide.components, 'components') : { id: 'components', kind: 'self', prompt: 'Say what each letter, symbol, or measurement stands for, then compare.', reveal: [q.decode.variables, q.decode.symbols, ...restrictions].filter(Boolean) },
     },
     {
@@ -79,11 +79,11 @@ export function openingSteps(q: Question, guide: Guide | undefined, rand: () => 
       },
     },
     {
-      title: 'What is the best first step?',
+      title: 'What strategy should I use?',
       step: {
         id: 'first',
         kind: 'choice',
-        prompt: 'What should you do first?',
+        prompt: 'What should you do first? Pick the move that starts the best strategy.',
         options: q.firstStep.options,
         answers: [q.firstStep.correct],
         hints: [q.recognition.strategy, q.recognition.rule],
@@ -93,18 +93,62 @@ export function openingSteps(q: Question, guide: Guide | undefined, rand: () => 
   ];
 }
 
+/** Assumptions that are never stated in a question, each with the words that would make it unsafe to offer. */
+const ASSUMPTIONS: { text: string; unless: RegExp; when?: (q: Question) => boolean }[] = [
+  { text: 'Every number involved is an integer', unless: /integer|how many|number of|factor|prime|divisib|remainder|multiple|digit|odd|even/i },
+  { text: 'Every unknown is positive', unless: /positive|negative|>|<|≥|≤|\\[gl]e|\\[gl]t|less|greater|between/i },
+  { text: 'The figure is drawn to scale', unless: /drawn to scale/i, when: (q) => !!q.diagram },
+  { text: 'The groups are the same size', unless: /same size|equal/i, when: (q) => q.category === 'statistics' },
+];
+
+/**
+ * Basic-guide step 2, graded: the stated facts, plus two statements that are
+ * never given — the quantity being asked for, and a common unstated assumption
+ * (only offered when the question's wording cannot make it true).
+ */
+export function basicGiven(q: Question, rand: () => number = Math.random): RunStep {
+  const text = [q.prompt, q.quantityA ?? '', q.quantityB ?? '', ...q.decode.given, q.decode.restrictions].join(' ');
+  const target = q.decode.askingOptions[q.decode.askingCorrect];
+  const traps = [`${target} (already stated)`, ...shuffle(ASSUMPTIONS.filter((a) => !a.unless.test(text) && (a.when?.(q) ?? true)).map((a) => a.text), rand).slice(0, 1)];
+  const options = [...q.decode.given, ...traps];
+  return {
+    id: 'given',
+    kind: 'multi',
+    prompt: 'Select every statement that is actually given. Leave out anything you would have to work out or assume.',
+    options,
+    correct: q.decode.given.map((_, i) => i),
+    hints: ['Look for each statement in the question’s own words.', 'The quantity you are solving for is never given.'],
+    explain: `Given: ${q.decode.given.join('; ')}. ${q.decode.restrictions && !/^none/i.test(q.decode.restrictions) ? `Restriction: ${q.decode.restrictions}` : ''}`.trim(),
+  };
+}
+
+/** Step 9, graded: the fastest valid approach, from the question's method analysis. */
+export function fasterStep(q: Question): RunStep | null {
+  const best = q.method.options.map((o, i) => (o.verdict === 'best' ? i : -1)).filter((i) => i >= 0);
+  if (!best.length || q.method.options.length < 2) return null;
+  return {
+    id: 'faster',
+    kind: 'choice',
+    prompt: 'Now that you have the answer: which approach is the fastest valid one for this question?',
+    options: q.method.options.map((o) => STRATEGIES[o.strategy]),
+    answers: best,
+    hints: [q.method.rule, 'A faster approach must still be valid: it has to work for every case the question allows.'],
+    explain: `${q.method.explanation} ${q.method.options.map((o) => `${STRATEGIES[o.strategy]} (${o.verdict}): ${o.note}`).join(' · ')}`,
+  };
+}
+
 /** Steps 6–7 for a guide's track, or a basic version built from the question's method and solution. */
 export function methodSteps(q: Question, track: GuideTrack | undefined): { title: string; step: RunStep }[] {
   if (track) {
     return [
-      { title: 'Which operation comes next?', step: fromGuide(track.operation, 'op') },
-      ...track.next.map((s, i) => ({ title: `What comes next? (${i + 1} of ${track.next.length})`, step: fromGuide(s, `next:${s.id}`) })),
+      { title: 'What calculation should I perform?', step: fromGuide(track.operation, 'op') },
+      ...track.next.map((s, i) => ({ title: `What is the next step? (${i + 1} of ${track.next.length})`, step: fromGuide(s, `next:${s.id}`) })),
     ];
   }
   const opts = q.method.options;
   return [
     {
-      title: 'Which method should you use?',
+      title: 'What calculation should I perform?',
       step: {
         id: 'op',
         kind: 'choice',
@@ -116,7 +160,7 @@ export function methodSteps(q: Question, track: GuideTrack | undefined): { title
       },
     },
     ...q.solution.fast.map((line, i) => ({
-      title: `What comes next? (${i + 1} of ${q.solution.fast.length})`,
+      title: `What is the next step? (${i + 1} of ${q.solution.fast.length})`,
       step: { id: `next:${i + 1}`, kind: 'self', prompt: i === 0 ? 'Carry out the first step of the method yourself, then compare.' : 'Do the next step yourself, then compare.', reveal: [line] } as RunStep,
     })),
   ];
@@ -429,7 +473,7 @@ export function GuidedRun({ q }: { q: Question }) {
           </>
         ) : (
           <>
-            <Tag>Basic guide</Tag> This question does not have a fully authored guide yet. Steps 1, 4, 5, 6 and the final answer are checked; the others are self-checks where you compare your thinking with the worked solution.
+            <Tag>Basic guide</Tag> This question does not have a fully authored guide yet. Steps 1, 2, 4, 5, 6, 8, and 9 are checked; steps 3 and 7 are self-checks where you compare your thinking with the worked solution.
           </>
         )}
       </p>
@@ -537,6 +581,8 @@ function FinalStep({ q, trace, startedAt }: { q: Question; trace: GuidedTrace; s
   const [message, setMessage] = useState<string | null>(null);
   const [first, setFirst] = useState<{ id: string; ts: number; ms: number; response: Response; correct: boolean; trace: GuidedTrace } | null>(null);
   const done = status !== 'open';
+  const faster = useMemo(() => fasterStep(q), [q]);
+  const [fasterDone, setFasterDone] = useState<StepOutcome | null>(null);
 
   function submit() {
     if (!isAnswered(response)) return setMessage('Enter or select an answer first.');
@@ -580,7 +626,7 @@ function FinalStep({ q, trace, startedAt }: { q: Question; trace: GuidedTrace; s
     <>
       <section className="card guided-step" aria-labelledby="gs-final">
         <h3 id="gs-final" className="guided-step-title">
-          <span className="guided-num">Step 8</span> Final answer
+          <span className="guided-num">Step 8</span> What is the final answer?
         </h3>
         <ExamAnswer q={q} value={response} onChange={(r) => !done && setResponse(r)} />
         {message && !done && (
@@ -635,7 +681,23 @@ function FinalStep({ q, trace, startedAt }: { q: Question; trace: GuidedTrace; s
             )}
           </Feedback>
           {first && !first.correct && <MistakePanel q={q} attemptId={first.id} response={first.response} attempt={{ ts: first.ts, ms: first.ms, mode: 'guided' }} trace={first.trace} />}
-          <Explanation q={q} />
+          {faster && !fasterDone && (
+            <StepCard
+              number="9"
+              title="Is there a faster valid approach?"
+              step={faster}
+              onDone={(o) => {
+                setFasterDone(o);
+                record(q, 'faster', o, 'guided');
+              }}
+            />
+          )}
+          {faster && fasterDone && (
+            <ol className="guided-trail" aria-label="Step 9">
+              <DoneStep number="9" title="Is there a faster valid approach?" step={faster} outcome={fasterDone} />
+            </ol>
+          )}
+          {(!faster || fasterDone) && <Explanation q={q} />}
         </>
       )}
     </>

@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { GUIDES, type GuideStep } from '../data/guides';
 import { QUESTION_BY_ID } from '../data/questions';
 import { parseRational, rationalEquals } from '../lib/grading';
+import { GUIDE_CHECKS } from './guideChecks';
 
 const R = (n: number, d = 1) => ({ n, d });
 type V = number | { n: number; d: number };
@@ -35,7 +36,7 @@ const median = (xs: number[]) => {
 };
 
 /** Independent values, keyed by step id (fields: stepId.fieldId). Shared ids across tracks must agree. */
-const VERIFY: Record<string, Record<string, V>> = {
+const VERIFY_BASE: Record<string, Record<string, V>> = {
   'al-quad-x2-7x-10': (() => {
     const [r1, r2] = roots(1, -7, 10);
     return { 'abc.a': 1, 'abc.b': -7, 'abc.c': 10, 'pair.p': -r2, 'pair.q': -r1, 'roots.r1': r1, 'roots.r2': r2, disc: 49 - 40 };
@@ -127,6 +128,9 @@ const VERIFY: Record<string, Record<string, V>> = {
   })(),
 };
 
+const VERIFY: Record<string, Record<string, V>> = { ...VERIFY_BASE, ...GUIDE_CHECKS };
+for (const k of Object.keys(GUIDE_CHECKS)) if (VERIFY_BASE[k]) throw new Error(`duplicate checks for ${k}`);
+
 function eq(entered: string, v: V) {
   const got = parseRational(entered);
   if (!got) return false;
@@ -194,8 +198,8 @@ describe('guides', () => {
   it('cover the required topic families', () => {
     const cats = GUIDES.map((g) => QUESTION_BY_ID[g.qid].category);
     for (const c of ['quadratic', 'inequalities', 'exponents', 'geometry'] as const) expect(cats.filter((x) => x === c).length, c).toBeGreaterThanOrEqual(4);
-    // Quadratic guides must ask for a, b, c explicitly.
-    for (const g of GUIDES.filter((g) => QUESTION_BY_ID[g.qid].category === 'quadratic' && /x\^2/.test(QUESTION_BY_ID[g.qid].prompt + (QUESTION_BY_ID[g.qid].prompt ?? '')))) {
+    // Quadratic-equation guides (… = 0) must ask for a, b, c explicitly.
+    for (const g of GUIDES.filter((g) => QUESTION_BY_ID[g.qid].category === 'quadratic' && /x\^2[^$]*=\s*0/.test(QUESTION_BY_ID[g.qid].prompt))) {
       expect(g.components.kind === 'fields' && g.components.fields.map((f) => f.id).join(), g.qid).toBe('a,b,c');
     }
   });
