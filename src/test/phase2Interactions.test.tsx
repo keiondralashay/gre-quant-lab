@@ -9,13 +9,13 @@ import { QUESTION_BY_ID } from '../data/questions';
 import { SHORTCUTS } from '../data/shortcuts';
 import { ALL_FILTER } from '../lib/deck';
 import { getProgress, reloadProgress, resetProgress, STORAGE_KEY } from '../lib/progress';
-import { ChooseMethod } from '../modules/ChooseMethod';
+import { MethodRound } from '../modules/ChooseMethod';
 import { Clues } from '../modules/Clues';
 import { Decode } from '../modules/Decode';
 import { Flashcards } from '../modules/Flashcards';
 import { Formulas } from '../modules/Formulas';
 import { Library } from '../modules/Library';
-import { Practice } from '../modules/Practice';
+import { Practice, practicePool } from '../modules/Practice';
 import { Recognize } from '../modules/Recognize';
 import { searchShortcuts, Vault } from '../modules/Vault';
 
@@ -161,7 +161,10 @@ describe('Topic Practice', () => {
   });
 
   it('states honestly when a level has no questions', () => {
-    render(<Practice lesson="systems" mode="solve" level="3" />);
+    // Pick a lesson/level combination that is actually empty in the current bank.
+    const empty = LESSONS.flatMap((l) => ([1, 2, 3] as const).map((lv) => ({ l: l.id, lv }))).find(({ l, lv }) => practicePool(l, 'solve', lv).length === 0)!;
+    expect(empty).toBeDefined();
+    render(<Practice lesson={empty.l} mode="solve" level={String(empty.lv)} />);
     expect(screen.getByText(/No bank questions match/)).toBeInTheDocument();
   });
 
@@ -182,7 +185,7 @@ describe('Phase 1 integration buttons', () => {
 
   it('inefficient but valid strategy → See a Faster Method → the vault shortcut', async () => {
     const user = userEvent.setup();
-    render(<ChooseMethod initialFilter={{ ...ALL_FILTER, category: 'systems', difficulty: 1 }} />);
+    render(<MethodRound q={QUESTION_BY_ID['al-system-elim-y']} onNext={() => {}} onShow={() => {}} position={1} size={1} />);
     await user.click(screen.getByRole('button', { name: /Substitution/ }));
     expect(screen.getByRole('link', { name: /See a Faster Method/ })).toHaveAttribute('href', '#/vault/elimination');
   });

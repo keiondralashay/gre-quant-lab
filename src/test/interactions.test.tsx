@@ -5,7 +5,7 @@ import { DECODE_LESSONS } from '../data/decodeLessons';
 import { QUESTION_BY_ID } from '../data/questions';
 import { ALL_FILTER } from '../lib/deck';
 import { getProgress, resetProgress, STORAGE_KEY, summarize } from '../lib/progress';
-import { ChooseMethod } from '../modules/ChooseMethod';
+import { MethodRound } from '../modules/ChooseMethod';
 import { Dashboard } from '../modules/Dashboard';
 import { Exercise } from '../components/Exercise';
 import { Recognize } from '../modules/Recognize';
@@ -123,7 +123,7 @@ describe('QuestionSolver', () => {
 describe('Choose the Fastest Method', () => {
   it('rates the chosen strategy and names the preferred one', async () => {
     const user = userEvent.setup();
-    render(<ChooseMethod initialFilter={{ ...ALL_FILTER, category: 'systems', difficulty: 1 }} />);
+    render(<MethodRound q={QUESTION_BY_ID['al-system-elim-y']} onNext={() => {}} onShow={() => {}} position={1} size={1} />);
     expect(screen.getByText('Which strategy is the most efficient?')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Substitution/ }));
     expect(screen.getByText('That works. A faster route exists, though.')).toBeInTheDocument();

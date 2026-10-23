@@ -13,11 +13,13 @@ type Step =
 
 function buildSteps(q: Question): Step[] {
   const d = q.decode;
+  // Shuffle so the correct option's authored position carries no information.
+  const askOrder = shuffle(d.askingOptions.map((_, i) => i));
   const others = shuffle(CATEGORY_IDS.filter((c) => c !== q.category && !q.secondary.includes(c))).slice(0, 3);
   const conceptIds = shuffle([q.category, ...others]);
   const methodOpts = q.method.options;
   return [
-    { level: 1, kind: 'choice', id: 'asking', title: '1. What is the question asking me to find?', options: d.askingOptions, correct: [d.askingCorrect], explain: 'Always pin down the target first. It decides when you can stop.' },
+    { level: 1, kind: 'choice', id: 'asking', title: '1. What is the question asking me to find?', options: askOrder.map((i) => d.askingOptions[i]), correct: [askOrder.indexOf(d.askingCorrect)], explain: 'Always pin down the target first. It decides when you can stop.' },
     { level: 1, kind: 'reveal', id: 'given', title: '2. What information is given?', reveal: d.given },
     { level: 1, kind: 'reveal', id: 'variables', title: '3. What are the variables?', reveal: [d.variables] },
     { level: 1, kind: 'reveal', id: 'symbols', title: '4. What do the symbols represent?', reveal: [d.symbols] },

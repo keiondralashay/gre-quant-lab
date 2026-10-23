@@ -56,6 +56,19 @@ export type Answer =
   | { kind: 'numeric'; num: number; den: number; tolerance?: number }
   | { kind: 'qc'; correct: QCAnswer };
 
+/** Phase 4 mistake categories. */
+export type MistakeType = 'recognition' | 'concept' | 'strategy' | 'calculation' | 'reading' | 'careless' | 'timing';
+
+/**
+ * A specific wrong response that is diagnostic evidence for a mistake type.
+ * `match` is a choice index (mc), a QC letter, or an exact numeric answer string (e.g. "-6", "4/25").
+ */
+export interface Distractor {
+  match: number | string;
+  type: MistakeType;
+  note: string;
+}
+
 export type Verdict = 'best' | 'valid' | 'slow' | 'invalid';
 
 export interface MethodOption {
@@ -151,4 +164,6 @@ export interface Question {
 
   hints: string[];
   mistakes: string[];
+  /** Phase 4: wrong responses that indicate a particular mistake type. */
+  distractors?: Distractor[];
 }

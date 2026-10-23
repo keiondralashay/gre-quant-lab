@@ -6,6 +6,8 @@
  */
 import { QUESTIONS } from '../data/questions';
 import { ENROLLMENT } from '../data/questions/phase2';
+import { VERIFY_B3 } from './verifyBank3';
+import { parseRational } from '../lib/grading';
 import type { QCAnswer, Question } from '../data/types';
 
 const EPS = 1e-9;
@@ -62,6 +64,7 @@ type Check =
   | { multi: number[] };
 
 const VERIFY: Record<string, () => Check | QCAnswer> = {
+  ...VERIFY_B3,
   // ---------- Arithmetic ----------
   'ar-pct-sale': () => ({ value: 80 - 80 * 0.25 }),
   'ar-pct-change-qc': () => qcRelation([[((50 - 40) / 40) * 100, ((50 - 40) / 50) * 100]]),
@@ -356,6 +359,30 @@ function checkQuestion(q: Question, check: Check) {
 function normalise(result: Check | QCAnswer): Check {
   return typeof result === 'string' ? { qc: result } : result;
 }
+
+describe('distractor evidence', () => {
+  it('every flagged distractor is a wrong answer that a learner can actually give', () => {
+    for (const q of QUESTIONS) {
+      for (const d of q.distractors ?? []) {
+        const a = q.answer;
+        if (a.kind === 'mc-single') {
+          expect(typeof d.match, q.id).toBe('number');
+          expect(d.match as number, q.id).toBeLessThan(q.choices!.length);
+          expect(d.match, `${q.id}: distractor must not be the correct choice`).not.toBe(a.correct);
+        } else if (a.kind === 'qc') {
+          expect(['A', 'B', 'C', 'D']).toContain(d.match);
+          expect(d.match, q.id).not.toBe(a.correct);
+        } else if (a.kind === 'numeric') {
+          const r = parseRational(String(d.match));
+          expect(r, `${q.id}: distractor ${d.match} must parse`).not.toBeNull();
+          expect(r!.num * a.den === a.num * r!.den, `${q.id}: distractor equals the answer`).toBe(false);
+        } else {
+          throw new Error(`${q.id}: distractors are not supported for select-all questions`);
+        }
+      }
+    }
+  });
+});
 
 describe('answer keys are independently verified', () => {
   it('every question has a verifier', () => {
