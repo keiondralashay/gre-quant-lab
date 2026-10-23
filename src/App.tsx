@@ -9,6 +9,11 @@ import { Formulas } from './modules/Formulas';
 import { Library } from './modules/Library';
 import { Practice } from './modules/Practice';
 import { Vault } from './modules/Vault';
+import { NextPractice } from './modules/NextPractice';
+import { Progress } from './modules/Progress';
+import { QuickPractice } from './modules/QuickPractice';
+import { Review } from './modules/Review';
+import { Speed } from './modules/Speed';
 import { Dashboard } from './modules/Dashboard';
 import { Decode } from './modules/Decode';
 import { Recognize } from './modules/Recognize';
@@ -34,6 +39,9 @@ const NAV = [
   { href: '#/', path: '/', label: 'Home' },
   { href: '#/library', path: '/library', label: 'Library' },
   { href: '#/practice', path: '/practice', label: 'Practice' },
+  { href: '#/speed', path: '/speed', label: 'Speed' },
+  { href: '#/review', path: '/review', label: 'Review' },
+  { href: '#/progress', path: '/progress', label: 'Progress' },
   { href: '#/vault', path: '/vault', label: 'Vault' },
   { href: '#/formulas', path: '/formulas', label: 'Formulas' },
   { href: '#/clues', path: '/clues', label: 'Clues' },
@@ -42,6 +50,8 @@ const NAV = [
 
 /** Phase 1 trainers live under Practice in the nav. */
 const PRACTICE_PATHS = ['/practice', '/recognize', '/decode', '/method', '/shortcut'];
+/** Phase 4 personalization pages live under Progress. */
+const PROGRESS_PATHS = ['/progress', '/next', '/quick'];
 
 export function App() {
   const [route, setRoute] = useState(parseHash);
@@ -89,10 +99,25 @@ export function App() {
     case '/practice':
       view = <Practice key={routeKey} lesson={route.params.get('lesson') ?? undefined} mode={route.params.get('mode') ?? undefined} level={route.params.get('level') ?? undefined} />;
       break;
+    case '/progress':
+      view = <Progress key={routeKey} />;
+      break;
+    case '/next':
+      view = <NextPractice key={routeKey} />;
+      break;
+    case '/quick':
+      view = <QuickPractice key={routeKey} />;
+      break;
+    case '/review':
+      view = <Review key={routeKey} />;
+      break;
+    case '/speed':
+      view = <Speed key={routeKey} mode={route.params.get('mode') ?? undefined} sessionId={route.params.get('session') ?? undefined} />;
+      break;
     default:
       view = <Dashboard />;
   }
-  const activeNav = PRACTICE_PATHS.includes(base) ? '/practice' : base;
+  const activeNav = PRACTICE_PATHS.includes(base) ? '/practice' : PROGRESS_PATHS.includes(base) ? '/progress' : base;
 
   return (
     <div className="app">

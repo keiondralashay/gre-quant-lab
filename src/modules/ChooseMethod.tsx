@@ -40,7 +40,25 @@ export function ChooseMethod({ initialFilter }: { initialFilter: DeckFilter }) {
   );
 }
 
-export function MethodRound({ q, onNext, onShow, position, size }: { q: Question; onNext: () => void; onShow: (id: string) => void; position: number; size: number }) {
+export function MethodRound({
+  q,
+  onNext,
+  onShow,
+  position,
+  size,
+  mode = 'method',
+  allowSolve = true,
+  nextLabel = 'Next question →',
+}: {
+  q: Question;
+  onNext: () => void;
+  onShow: (id: string) => void;
+  position: number;
+  size: number;
+  mode?: string;
+  allowSolve?: boolean;
+  nextLabel?: string;
+}) {
   const opts = useMemo(() => shuffle(q.method.options), [q]);
   const [picked, setPicked] = useState<number | null>(null);
   const [solving, setSolving] = useState(false);
@@ -58,6 +76,9 @@ export function MethodRound({ q, onNext, onShow, position, size }: { q: Question
       category: q.category,
       area: q.area,
       difficulty: q.difficulty,
+      format: q.format,
+      topic: q.topic,
+      mode,
       ms: Date.now() - started.current,
       detail: opts[i].strategy,
     });
@@ -147,11 +168,13 @@ export function MethodRound({ q, onNext, onShow, position, size }: { q: Question
             </Disclosure>
           </div>
           <div className="actions">
-            <button className="btn btn-primary" onClick={() => setSolving(true)}>
-              Solve it myself
-            </button>
-            <button className="btn" onClick={onNext}>
-              Next question →
+            {allowSolve && (
+              <button className="btn btn-primary" onClick={() => setSolving(true)}>
+                Solve it myself
+              </button>
+            )}
+            <button className={allowSolve ? 'btn' : 'btn btn-primary'} onClick={onNext}>
+              {nextLabel}
             </button>
           </div>
         </>

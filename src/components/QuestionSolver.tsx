@@ -4,6 +4,8 @@ import { CATEGORY_LESSON, href, primaryLesson, QUESTION_SHORTCUT } from '../data
 import { grade, QC_LABELS, type Response } from '../lib/grading';
 import { recordAttempt } from '../lib/progress';
 import { DecodePanel } from './DecodePanel';
+import { MistakePanel } from './MistakePanel';
+import { serializeAnswer, serializeResponse } from '../lib/mistakes';
 import { Explanation } from './Explanation';
 import { MathText } from './MathText';
 import { QuestionStem } from './QuestionStem';
@@ -41,6 +43,7 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
   const [invalid, setInvalid] = useState<string | null>(null);
   const [hintsShown, setHintsShown] = useState(0);
   const [decodeOpen, setDecodeOpen] = useState(false);
+  const [firstAttempt, setFirstAttempt] = useState<{ id: string; ts: number; ms: number; response: Response } | null>(null);
   const started = useRef(Date.now());
   const answerRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +55,7 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
     setInvalid(null);
     setHintsShown(0);
     setDecodeOpen(false);
+    setFirstAttempt(null);
     started.current = Date.now();
   }, [q]);
 
@@ -67,7 +71,24 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
     setResult(g);
     if (firstResult === null) {
       setFirstResult(g);
-      recordAttempt({ kind: 'answer', ref: q.id, result: g, category: q.category, area: q.area, difficulty: q.difficulty, ms: Date.now() - started.current, hintsUsed: hintsShown, detail: source });
+      const ms = Date.now() - started.current;
+      const id = recordAttempt({
+        kind: 'answer',
+        ref: q.id,
+        result: g,
+        category: q.category,
+        area: q.area,
+        difficulty: q.difficulty,
+        format: q.format,
+        topic: q.topic,
+        ms,
+        hintsUsed: hintsShown,
+        detail: source,
+        mode: source,
+        selected: serializeResponse(response),
+        correctAnswer: serializeAnswer(q.answer),
+      });
+      setFirstAttempt({ id, ts: Date.now(), ms, response });
     }
     setPhase(g === 'correct' || firstResult !== null ? 'done' : 'retry');
   }
@@ -241,6 +262,9 @@ export function QuestionSolver({ q, source, onSimilar, hideStem }: Props) {
               </p>
             )}
           </Feedback>
+          {firstResult === 'incorrect' && firstAttempt && (
+            <MistakePanel q={q} attemptId={firstAttempt.id} response={firstAttempt.response} attempt={{ ts: firstAttempt.ts, ms: firstAttempt.ms, mode: source }} />
+          )}
           <Explanation q={q} />
           {onSimilar && (
             <div className="actions">

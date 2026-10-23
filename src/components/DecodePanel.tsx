@@ -47,7 +47,7 @@ function buildSteps(q: Question): Step[] {
 
 const LEVEL_TITLES = { 1: 'Level 1 · Identify the components', 2: 'Level 2 · Connect the components to a strategy', 3: 'Level 3 · Use the strategy to solve' };
 
-export function DecodePanel({ q, onSolve, onClose }: { q: Question; onSolve: () => void; onClose: () => void }) {
+export function DecodePanel({ q, onSolve, onClose, mode, solveLabel = 'Solve it now' }: { q: Question; onSolve: () => void; onClose: () => void; mode?: string; solveLabel?: string }) {
   const steps = useMemo(() => buildSteps(q), [q]);
   const [index, setIndex] = useState(0);
   const [wrong, setWrong] = useState<number[]>([]);
@@ -71,7 +71,7 @@ export function DecodePanel({ q, onSolve, onClose }: { q: Question; onSolve: () 
     const ok = step.correct.includes(i);
     if (ok || wrong.length >= 1) {
       // First-try result is what gets recorded.
-      recordAttempt({ kind: 'decode-step', ref: `${q.id}:${step.id}`, result: wrong.length === 0 && ok ? 'correct' : 'incorrect', category: q.category, area: q.area, difficulty: q.difficulty });
+      recordAttempt({ kind: 'decode-step', ref: `${q.id}:${step.id}`, result: wrong.length === 0 && ok ? 'correct' : 'incorrect', category: q.category, area: q.area, difficulty: q.difficulty, format: q.format, topic: q.topic, mode });
       setPicked(i);
       if (!ok) setWrong((w) => [...w, i]);
     } else {
@@ -177,7 +177,7 @@ export function DecodePanel({ q, onSolve, onClose }: { q: Question; onSolve: () 
         <>
           <p>You have decoded the question. Now use the strategy to solve it yourself.</p>
           <button type="button" className="btn btn-primary" onClick={onSolve}>
-            Solve it now
+            {solveLabel}
           </button>
         </>
       )}

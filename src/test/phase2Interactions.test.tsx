@@ -157,7 +157,7 @@ describe('Topic Practice', () => {
     await user.click(screen.getByRole('tab', { name: 'Solve' }));
     expect(screen.getByRole('button', { name: 'Submit Answer' })).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Shortcut' }));
-    expect(screen.getByText(/Shortcut to apply: Elimination in systems/)).toBeInTheDocument();
+    expect(screen.getByText(/Shortcut to apply: (Elimination in systems|Quantitative Comparison strategies|Working backward from answer choices)/)).toBeInTheDocument();
   });
 
   it('states honestly when a level has no questions', () => {

@@ -68,7 +68,29 @@ function Counter({ position, size }: { position: number; size: number }) {
   );
 }
 
-export function TypeRound({ q, optionCount, onNext, onShow, position, size }: { q: Question; optionCount: number; onNext: () => void; onShow: (id: string) => void; position: number; size: number }) {
+export function TypeRound({
+  q,
+  optionCount,
+  onNext,
+  onShow,
+  position,
+  size,
+  mode = 'recognize',
+  allowSolve = true,
+  nextLabel = 'Next question →',
+}: {
+  q: Question;
+  optionCount: number;
+  onNext: () => void;
+  onShow: (id: string) => void;
+  position: number;
+  size: number;
+  /** Practice mode stored with the attempt. */
+  mode?: string;
+  /** Offer "solve it now" after recognizing (off for recognize-only activities). */
+  allowSolve?: boolean;
+  nextLabel?: string;
+}) {
   const options = useMemo(() => recognitionOptions(q, optionCount), [q, optionCount]);
   const [picked, setPicked] = useState<Category | null>(null);
   const [solving, setSolving] = useState(false);
@@ -84,7 +106,7 @@ export function TypeRound({ q, optionCount, onNext, onShow, position, size }: { 
     const c = options[i];
     setPicked(c);
     const r = c === q.category ? 'correct' : q.secondary.includes(c) ? 'partial' : 'incorrect';
-    recordAttempt({ kind: 'recognition', ref: q.id, result: r, category: q.category, area: q.area, difficulty: q.difficulty, ms: Date.now() - started.current, detail: c });
+    recordAttempt({ kind: 'recognition', ref: q.id, result: r, category: q.category, area: q.area, difficulty: q.difficulty, format: q.format, topic: q.topic, mode, ms: Date.now() - started.current, detail: c });
   }
 
   const states = options.map((c): OptionState => {
@@ -164,13 +186,15 @@ export function TypeRound({ q, optionCount, onNext, onShow, position, size }: { 
             </p>
             <Remember text={q.recognition.rule} />
           </div>
-          <p className="ask">Do you want to solve it now?</p>
+          {allowSolve && <p className="ask">Do you want to solve it now?</p>}
           <div className="actions">
-            <button className="btn btn-primary" onClick={() => setSolving(true)}>
-              Yes, let me solve it
-            </button>
-            <button className="btn" onClick={onNext}>
-              Next question →
+            {allowSolve && (
+              <button className="btn btn-primary" onClick={() => setSolving(true)}>
+                Yes, let me solve it
+              </button>
+            )}
+            <button className={allowSolve ? 'btn' : 'btn btn-primary'} onClick={onNext}>
+              {nextLabel}
             </button>
           </div>
         </>
@@ -189,7 +213,7 @@ export function FirstStepRound({ q, onNext, onShow, position, size }: { q: Quest
     if (picked !== null) return;
     const i = order[displayIndex];
     setPicked(i);
-    recordAttempt({ kind: 'first-step', ref: q.id, result: i === q.firstStep.correct ? 'correct' : 'incorrect', category: q.category, area: q.area, difficulty: q.difficulty, ms: Date.now() - started.current, detail: String(i) });
+    recordAttempt({ kind: 'first-step', ref: q.id, result: i === q.firstStep.correct ? 'correct' : 'incorrect', category: q.category, area: q.area, difficulty: q.difficulty, format: q.format, topic: q.topic, mode: 'first-step', ms: Date.now() - started.current, detail: String(i) });
   }
 
   if (solving) {

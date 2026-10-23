@@ -23,13 +23,16 @@ export const MODULES: ModuleCard[] = [
   { n: 7, title: 'Quantitative Comparison', blurb: 'QC trainer with “Test Different Values”.', phase: 3 },
   { n: 8, title: 'GRE Topic Library', blurb: 'Every official content area in short, practice-linked lessons.', href: '#/library', phase: 2 },
   { n: 9, title: 'Shortcut & Formula Vault', blurb: 'Searchable shortcuts with “when NOT to use it” and drills.', href: '#/vault', phase: 2 },
-  { n: 10, title: 'Mistake Tracker', blurb: 'Error categories and “What should I practice next?”', phase: 4 },
-  { n: 11, title: 'Speed Training', blurb: 'Learn / Practice / GRE Speed modes, 30-second recognition.', phase: 4 },
+  { n: 10, title: 'Mistake Tracker', blurb: 'Why you miss questions, plus the Review Queue: retry, similar, recognize-only.', href: '#/review', phase: 4 },
+  { n: 11, title: 'Speed Training', blurb: '30-second recognition, 60-second strategy, and timed GRE sets.', href: '#/speed', phase: 4 },
   { n: 12, title: 'Personalized Review', blurb: 'Spaced review of what you missed.', phase: 5 },
   { n: 13, title: 'Understand the Formula', blurb: 'Tap any part of a formula to see what it means, then test yourself.', href: '#/formulas', phase: 2 },
   { n: 14, title: 'Spot the Clue', blurb: 'Translate GRE wording into math, and back again.', href: '#/clues', phase: 2 },
   { n: 15, title: 'Shortcut Flashcards', blurb: 'Flip, rate, bookmark. Missed cards come back first.', href: '#/flashcards', phase: 2 },
   { n: 16, title: 'Topic Practice', blurb: 'Recognition, decode, strategy, solve, and shortcut practice by lesson.', href: '#/practice', phase: 2 },
+  { n: 17, title: 'My Quant Progress', blurb: 'Accuracy by skill, topic, format, and difficulty, with trends over time.', href: '#/progress', phase: 4 },
+  { n: 18, title: 'What Should I Practice Next?', blurb: 'Your weak areas, ranked from your own results.', href: '#/next', phase: 4 },
+  { n: 19, title: 'Practice What I Need', blurb: 'A 5-question session aimed at your weak spots.', href: '#/quick', phase: 4 },
 ];
 
 function Stat({ label, t, hint }: { label: string; t: Tally; hint?: string }) {
@@ -60,6 +63,16 @@ export function Dashboard() {
             <li key={w}>{w}</li>
           ))}
         </ol>
+        {hasData && (
+          <div className="actions">
+            <a className="btn btn-primary" href="#/quick">
+              Practice What I Need →
+            </a>
+            <a className="btn" href="#/progress">
+              My Quant Progress
+            </a>
+          </div>
+        )}
         {!hasData && (
           <div className="actions">
             <a className="btn btn-primary" href="#/recognize">
