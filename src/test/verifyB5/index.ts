@@ -1,0 +1,6 @@
+import type { StepChecks } from '../guideChecks/types';
+import type { Check } from '../verifyBank3';
+import { STEPS_QUAD, VERIFY_QUAD } from './algebraQuad';
+
+export const VERIFY_B5: Record<string, () => Check> = { ...VERIFY_QUAD };
+export const STEPS_B5: StepChecks = { ...STEPS_QUAD };

@@ -1,6 +1,7 @@
 // Connects questions, lessons, shortcuts, and formulas. Every id here is
 // checked by src/test/links.test.ts so navigation buttons never dead-end.
 import type { Category } from './types';
+import { B5_ITEMS } from './questions/b5';
 
 /** Question → [primary lesson, ...other lessons]. */
 export const QUESTION_LESSONS: Record<string, string[]> = {
@@ -208,6 +209,7 @@ export const QUESTION_LESSONS: Record<string, string[]> = {
   'b4-perm-shelf': ['permutations', 'counting'],
   'b4-combo-choose3': ['combinations', 'counting'],
   'b4-venn-neither': ['sets-venn'],
+  ...Object.fromEntries(B5_ITEMS.map((i) => [i.q.id, i.lessons])),
 };
 
 /** Question → the shortcut it best exercises (only where a genuine shortcut applies). */

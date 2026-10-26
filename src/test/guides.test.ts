@@ -200,7 +200,9 @@ describe('guides', () => {
     for (const c of ['quadratic', 'inequalities', 'exponents', 'geometry'] as const) expect(cats.filter((x) => x === c).length, c).toBeGreaterThanOrEqual(4);
     // Quadratic-equation guides (… = 0) must ask for a, b, c explicitly.
     for (const g of GUIDES.filter((g) => QUESTION_BY_ID[g.qid].category === 'quadratic' && /x\^2[^$]*=\s*0/.test(QUESTION_BY_ID[g.qid].prompt))) {
-      expect(g.components.kind === 'fields' && g.components.fields.map((f) => f.id).join(), g.qid).toBe('a,b,c');
+      // a and b always; c too unless the constant is itself the unknown (e.g. k).
+      const ids = g.components.kind === 'fields' ? g.components.fields.map((f) => f.id) : [];
+      expect(ids.includes('a') && ids.includes('b') && (ids.includes('c') || /k\s*=\s*0/.test(QUESTION_BY_ID[g.qid].prompt)), g.qid).toBe(true);
     }
   });
 });

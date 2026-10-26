@@ -5,10 +5,11 @@ import { algebraGuides } from './algebra';
 import { arithDataGuides } from './arithData';
 import { geometryGuides } from './geometry';
 import type { Guide } from './types';
+import { B5_ITEMS } from '../questions/b5';
 import { algebraAGuides } from './g2/algebraA';
 import { arithAGuides } from './g2/arithA';
 
 export type { Guide, GuideStep, GuideTrack } from './types';
 
-export const GUIDES: Guide[] = [...algebraGuides, ...geometryGuides, ...arithDataGuides, ...algebraAGuides, ...arithAGuides, ...dataBGuides, ...geometryBGuides, ...diGuides];
+export const GUIDES: Guide[] = [...algebraGuides, ...geometryGuides, ...arithDataGuides, ...algebraAGuides, ...arithAGuides, ...dataBGuides, ...geometryBGuides, ...diGuides, ...B5_ITEMS.map((i) => i.g)];
 export const GUIDE_BY_QID: Record<string, Guide> = Object.fromEntries(GUIDES.map((g) => [g.qid, g]));

@@ -9,6 +9,7 @@ import { ENROLLMENT } from '../data/questions/phase2';
 import { VERIFY_B3 } from './verifyBank3';
 import { VERIFY_DI } from './verifyDI';
 import { VERIFY_B4 } from './verifyBank4';
+import { VERIFY_B5 } from './verifyB5';
 import { parseRational } from '../lib/grading';
 import type { QCAnswer, Question } from '../data/types';
 
@@ -69,6 +70,7 @@ const VERIFY: Record<string, () => Check | QCAnswer> = {
   ...VERIFY_B3,
   ...VERIFY_DI,
   ...VERIFY_B4,
+  ...VERIFY_B5,
   // ---------- Arithmetic ----------
   'ar-pct-sale': () => ({ value: 80 - 80 * 0.25 }),
   'ar-pct-change-qc': () => qcRelation([[((50 - 40) / 40) * 100, ((50 - 40) / 50) * 100]]),
