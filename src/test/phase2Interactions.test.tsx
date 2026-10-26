@@ -162,9 +162,11 @@ describe('Topic Practice', () => {
 
   it('states honestly when a level has no questions', () => {
     // Pick a lesson/level combination that is actually empty in the current bank.
-    const empty = LESSONS.flatMap((l) => ([1, 2, 3] as const).map((lv) => ({ l: l.id, lv }))).find(({ l, lv }) => practicePool(l, 'solve', lv).length === 0)!;
+    // Pick a lesson/skill/level combination that is actually empty in the current bank.
+    const combos = LESSONS.flatMap((l) => (['solve', 'shortcut'] as const).flatMap((m) => ([1, 2, 3] as const).map((lv) => ({ l: l.id, m, lv }))));
+    const empty = combos.find(({ l, m, lv }) => practicePool(l, m, lv).length === 0)!;
     expect(empty).toBeDefined();
-    render(<Practice lesson={empty.l} mode="solve" level={String(empty.lv)} />);
+    render(<Practice lesson={empty.l} mode={empty.m} level={String(empty.lv)} />);
     expect(screen.getByText(/No bank questions match/)).toBeInTheDocument();
   });
 
