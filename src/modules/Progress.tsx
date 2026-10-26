@@ -6,6 +6,7 @@ import type { Category, Format } from '../data/types';
 import { applyFilter, metrics, MODE_LABELS, modeOf, series, type Filter, type RangeKey, type SeriesPoint, type Tally } from '../lib/analytics';
 import { MISTAKE_LABELS } from '../lib/mistakes';
 import { useProgress } from '../lib/progress';
+import { BackupPanel } from '../components/BackupPanel';
 
 const pctText = (t: Tally) => (t.total ? `${Math.round((t.correct / t.total) * 100)}%` : '—');
 const secs = (ms: number | null) => (ms === null ? '—' : `${Math.round(ms / 1000)}s`);
@@ -76,6 +77,7 @@ export function Progress() {
             Try Speed Training
           </a>
         </div>
+        <BackupPanel />
       </div>
     );
   }
@@ -234,6 +236,7 @@ export function Progress() {
           Mistake Review Queue
         </a>
       </div>
+      <BackupPanel />
     </div>
   );
 }

@@ -241,6 +241,114 @@ export function getProgress(): ProgressState {
   return state;
 }
 
+// ---------- Backup and restore ----------
+
+/** Marker written into backup files so other JSON files are rejected on import. */
+export const BACKUP_APP = 'gre-quant-mastery';
+
+/**
+ * A backup file: the saved progress object exactly as stored, wrapped with a
+ * label. The stored format itself is unchanged.
+ */
+export function exportProgress(now = new Date()): string {
+  return JSON.stringify({ app: BACKUP_APP, storageKey: STORAGE_KEY, exportedAt: now.toISOString(), progress: state }, null, 2);
+}
+
+const KINDS: AttemptKind[] = ['recognition', 'first-step', 'strategy', 'answer', 'decode-step', 'decode-exercise', 'lesson-check', 'shortcut-drill', 'formula-check', 'clue', 'clue-spot', 'guided-step'];
+const RESULTS: AttemptResult[] = ['correct', 'partial', 'incorrect'];
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isStrArr = (v: unknown) => Array.isArray(v) && v.every((x) => typeof x === 'string');
+
+export interface BackupSummary {
+  attempts: number;
+  answers: number;
+  lessonsVisited: number;
+  sessions: number;
+  guidedRuns: number;
+  exportedAt?: string;
+  firstTs?: number;
+  lastTs?: number;
+}
+
+export type BackupCheck = { ok: true; progress: ProgressState; summary: BackupSummary } | { ok: false; error: string };
+
+/** Checks a backup file's text without writing anything. */
+export function validateBackup(text: string): BackupCheck {
+  if (text.length > 25_000_000) return { ok: false, error: 'The file is too large to be a progress backup.' };
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return { ok: false, error: 'The file is not valid JSON.' };
+  }
+  if (!isObj(raw)) return { ok: false, error: 'The file does not contain a progress backup.' };
+  // Accept this app's backup wrapper, or a bare saved-progress object.
+  let p: unknown = raw;
+  let exportedAt: string | undefined;
+  if ('progress' in raw) {
+    if (raw.app !== BACKUP_APP) return { ok: false, error: 'This backup was not made by GRE Quant Mastery.' };
+    p = raw.progress;
+    exportedAt = typeof raw.exportedAt === 'string' ? raw.exportedAt : undefined;
+  }
+  if (!isObj(p)) return { ok: false, error: 'The backup has no progress data.' };
+  if (p.version !== 1) return { ok: false, error: `Unsupported progress version (${String(p.version)}). Expected version 1.` };
+  if (!Array.isArray(p.attempts)) return { ok: false, error: 'The backup has no attempt list.' };
+  for (let i = 0; i < p.attempts.length; i++) {
+    const a = p.attempts[i] as unknown;
+    const bad = (why: string): BackupCheck => ({ ok: false, error: `Attempt ${i + 1} is invalid: ${why}.` });
+    if (!isObj(a)) return bad('not an object');
+    if (!KINDS.includes(a.kind as AttemptKind)) return bad(`unknown kind "${String(a.kind)}"`);
+    if (typeof a.ref !== 'string') return bad('missing question or exercise id');
+    if (!RESULTS.includes(a.result as AttemptResult)) return bad(`unknown result "${String(a.result)}"`);
+    if (typeof a.ts !== 'number' || !Number.isFinite(a.ts)) return bad('missing timestamp');
+    if (a.id !== undefined && typeof a.id !== 'string') return bad('id is not text');
+  }
+  if (p.cards !== undefined && !isObj(p.cards)) return { ok: false, error: 'Flashcard data is malformed.' };
+  if (p.bookmarks !== undefined && !isStrArr(p.bookmarks)) return { ok: false, error: 'Bookmarks are malformed.' };
+  if (p.visitedLessons !== undefined && !isStrArr(p.visitedLessons)) return { ok: false, error: 'Lesson history is malformed.' };
+  if (p.classifications !== undefined && !isObj(p.classifications)) return { ok: false, error: 'Mistake classifications are malformed.' };
+  if (p.sessions !== undefined && !(Array.isArray(p.sessions) && p.sessions.every((s) => isObj(s) && typeof s.id === 'string' && Array.isArray(s.questions))))
+    return { ok: false, error: 'Timed session history is malformed.' };
+  const progress = p as unknown as ProgressState;
+  const ts = progress.attempts.map((a) => a.ts);
+  return {
+    ok: true,
+    progress,
+    summary: {
+      attempts: progress.attempts.length,
+      answers: progress.attempts.filter((a) => a.kind === 'answer').length,
+      lessonsVisited: progress.visitedLessons?.length ?? 0,
+      sessions: progress.sessions?.length ?? 0,
+      guidedRuns: progress.attempts.filter((a) => a.trace).length,
+      exportedAt,
+      firstTs: ts.length ? Math.min(...ts) : undefined,
+      lastTs: ts.length ? Math.max(...ts) : undefined,
+    },
+  };
+}
+
+/**
+ * Replaces saved progress with a validated backup. If the browser refuses to
+ * save it, the previous progress is kept and false is returned.
+ */
+export function replaceProgress(next: ProgressState): boolean {
+  const store = globalThis.localStorage;
+  const previous = store?.getItem(STORAGE_KEY) ?? null;
+  try {
+    store?.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    try {
+      if (previous !== null) store?.setItem(STORAGE_KEY, previous);
+    } catch {
+      // Nothing was written; the previous value is still in place.
+    }
+    return false;
+  }
+  state = load();
+  emit();
+  return true;
+}
+
 /** Test helper: reload from storage. */
 export function reloadProgress() {
   state = load();
