@@ -16,6 +16,21 @@ npm run build      # type-check + production build into dist/
 npm run preview    # serve the production build
 ```
 
+Requires Node.js 20.19+ or 22.12+ (verified with Node 22.22). The app runs at the address the command prints: `npm run dev` → http://localhost:5173/, `npm run preview` → http://localhost:4173/.
+
+### Studying day to day
+
+- Open **My Quant Progress** (`#/progress`) and use **Back up and restore progress**:
+  - **Export Progress** downloads `gre-quant-progress-YYYY-MM-DD.json`.
+  - **Import Progress** checks the file first and shows what it contains. Nothing changes until you choose **Replace my progress**.
+  - An invalid file is rejected with a reason, and your saved progress is left as it was.
+- Progress is stored only in this browser (`localStorage`, key `gre.quant.progress.v1`). Clearing site data, using a private window, or switching browsers or devices starts empty. Export regularly.
+- The backup file is the saved-progress object unchanged, wrapped with `app`, `storageKey`, and `exportedAt`. The bare saved object is also accepted.
+- **How progress is counted:**
+  - Every answer, retry, hint count, and walkthrough step is appended; nothing is overwritten.
+  - A lesson quick check records your first complete try on each visit. Correcting it on the same visit doesn't count. After a reload, the fields reset and a fully correct try marks it **Checks passed**.
+  - In a walkthrough, the problem-type and strategy steps also count toward recognition and strategy accuracy.
+
 No API keys and no backend. All questions come from a fixed, hand-written bank. Nothing is AI-generated at runtime.
 
 ## Phase 1 — implemented
