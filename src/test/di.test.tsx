@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DIChart } from '../components/DIChart';
 import { DI_NEEDS, DI_SETS } from '../data/diSets';
@@ -33,6 +33,16 @@ describe('DI sets', () => {
     expect(screen.getByRole('img', { name: 'Sales: 60 employees' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Show as table' }));
     expect(screen.getByRole('cell', { name: '60' })).toBeInTheDocument();
+  });
+  it('a circle graph names every slice in an HTML legend (clockwise) and keeps the table view', async () => {
+    const user = userEvent.setup();
+    const pie = DI_SETS.find((s) => s.chart.kind === 'pie')!.chart as Extract<(typeof DI_SETS)[number]['chart'], { kind: 'pie' }>;
+    render(<DIChart chart={pie} />);
+    const items = within(screen.getByRole('list', { name: /Legend, clockwise/ })).getAllByRole('listitem');
+    expect(items.map((li) => li.textContent)).toEqual(pie.slices.map((s) => `${s.label}${s.pct}%`));
+    for (const s of pie.slices) expect(screen.getByRole('img', { name: `${s.label}: ${s.pct}%` })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Show as table' }));
+    expect(screen.getByRole('rowheader', { name: 'Transportation' })).toBeInTheDocument();
   });
 });
 

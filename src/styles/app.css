@@ -1907,10 +1907,50 @@ a.practice-mode:hover {
   font-weight: 600;
   font-size: 0.9rem;
 }
-.di-chart .di-pie {
-  max-width: 480px;
-  margin: 0 auto;
+.di-pie-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 24px;
 }
+.di-chart .di-pie {
+  width: min(100%, 260px);
+  flex: 0 1 260px;
+}
+.di-chart .slice-text {
+  fill: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.pie-legend {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 6px;
+  min-width: 190px;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+.pie-legend li {
+  display: grid;
+  grid-template-columns: 14px 1fr auto;
+  gap: 8px;
+}
+.pie-legend .swatch {
+  width: 14px;
+  height: 14px;
+}
+.pie-legend-pct {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.swatch.slot-4 { background: var(--series-4); }
+.swatch.slot-5 { background: var(--series-5); }
 
 /* ---------- GRE on-screen calculator ---------- */
 .calc-bar {
