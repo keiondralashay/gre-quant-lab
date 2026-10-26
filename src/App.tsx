@@ -58,7 +58,7 @@ export function App() {
   let view;
   switch (base) {
     case '/recognize':
-      view = <Recognize key={routeKey} initialFilter={filterFrom(route.params)} initialMode={route.params.get('mode') === 'first' ? 'first' : 'type'} />;
+      view = <Recognize key={routeKey} initialFilter={filterFrom(route.params)} initialMode={route.params.get('mode') === 'first' ? 'first' : 'type'} initialId={route.params.get('q') ?? undefined} />;
       break;
     case '/decode':
       view = <Decode key={routeKey} initialLesson={route.params.get('lesson') ?? undefined} />;

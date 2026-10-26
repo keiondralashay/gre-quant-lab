@@ -177,7 +177,7 @@ describe('Topic Practice', () => {
 describe('Phase 1 integration buttons', () => {
   it('missed recognition → Review This Concept → the lesson', async () => {
     const user = userEvent.setup();
-    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} />);
+    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} initialId="ar-remainder-3n" />);
     await user.click(screen.getByRole('checkbox', { name: /all 14 categories/ }));
     await user.click(screen.getByRole('button', { name: 'Geometry' }));
     expect(screen.getByRole('link', { name: /Review This Concept/ })).toHaveAttribute('href', '#/library/remainders');

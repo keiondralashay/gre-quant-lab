@@ -53,7 +53,7 @@ describe('unofficial adaptive mode', () => {
     saveSession(rec);
     const { container } = render(<TimedResults rec={rec} />);
     expect(screen.getByText(/so Section 2 will use the/)).toHaveTextContent('You answered 9 of 12 correctly, so Section 2 will use the harder difficulty mix');
-    expect(container.textContent).not.toMatch(/scaled|score of|estimated score|predicted score/i);
+    expect(container.textContent).not.toMatch(/scaled score|gre score|estimated score|predicted score|your score/i);
     await user.click(screen.getByRole('button', { name: 'Start Section 2' }));
     const active = getProgress().activeSession as { adaptive: { stage: number; tier: string } };
     expect(active.adaptive).toMatchObject({ stage: 2, tier: 'harder' });

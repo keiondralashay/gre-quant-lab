@@ -17,8 +17,8 @@ beforeEach(() => {
 describe('Recognize the Problem', () => {
   it('grades recognition, explains clues, then lets the learner solve', async () => {
     const user = userEvent.setup();
-    // Only one question matches: remainders, moderate.
-    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} />);
+    // Pin the question; the filtered deck now holds several.
+    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} initialId="ar-remainder-3n" />);
     expect(screen.getByText(/When the positive integer/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Remainders' }));
     expect(screen.getByText('Yes — Remainders.')).toBeInTheDocument();
@@ -35,7 +35,7 @@ describe('Recognize the Problem', () => {
 
   it('gives partial credit for a secondary concept', async () => {
     const user = userEvent.setup();
-    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} />);
+    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} initialId="ar-remainder-3n" />);
     await user.click(screen.getByRole('checkbox', { name: /all 14 categories/ }));
     await user.click(screen.getByRole('button', { name: 'Number properties' }));
     expect(screen.getByText(/Close\. Number properties is involved/)).toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('Recognize the Problem', () => {
 
   it('first-step mode asks for the first move only', async () => {
     const user = userEvent.setup();
-    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} initialMode="first" />);
+    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} initialMode="first" initialId="ar-remainder-3n" />);
     expect(screen.getByText(/What would you do FIRST\?/, { selector: 'p' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Pick n = 4/ }));
     expect(screen.getByText('Good first move.')).toBeInTheDocument();
@@ -160,7 +160,7 @@ describe('Dashboard and persistence', () => {
     unmount();
 
     const user = userEvent.setup();
-    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} />);
+    render(<Recognize initialFilter={{ ...ALL_FILTER, category: 'remainders', difficulty: 2 }} initialId="ar-remainder-3n" />);
     await user.click(screen.getByRole('button', { name: 'Remainders' }));
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
     expect(stored.attempts).toHaveLength(1);

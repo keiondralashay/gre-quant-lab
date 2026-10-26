@@ -3,6 +3,7 @@ import { FilterBar } from '../components/FilterBar';
 import { MathText } from '../components/MathText';
 import { QuestionSolver } from '../components/QuestionSolver';
 import { QuestionStem } from '../components/QuestionStem';
+import { QUESTION_BY_ID } from '../data/questions';
 import { Feedback, OptionList, Remember, type OptionState } from '../components/ui';
 import { CATEGORIES, CATEGORY_IDS } from '../data/taxonomy';
 import type { Category, Question } from '../data/types';
@@ -23,11 +24,16 @@ export function recognitionOptions(q: Question, count: number, rand: () => numbe
   return shuffle([q.category, ...secondary, ...fill], rand);
 }
 
-export function Recognize({ initialFilter, initialMode = 'type' }: { initialFilter: DeckFilter; initialMode?: Mode }) {
+export function Recognize({ initialFilter, initialMode = 'type', initialId }: { initialFilter: DeckFilter; initialMode?: Mode; initialId?: string }) {
   const [filter, setFilter] = useState(initialFilter);
   const [mode, setMode] = useState<Mode>(initialMode);
   const [allCategories, setAllCategories] = useState(false);
   const deck = useDeck(filter);
+  const { show } = deck;
+  // #/recognize?q=<id> opens that question first; the rest of the deck follows.
+  useEffect(() => {
+    if (initialId && QUESTION_BY_ID[initialId]) show(initialId);
+  }, [initialId, show]);
 
   return (
     <div className="module">
