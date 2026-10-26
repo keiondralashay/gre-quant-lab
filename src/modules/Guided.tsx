@@ -715,7 +715,7 @@ export function Guided({ qid }: { qid?: string }) {
     <div className="module">
       <header className="module-head">
         <h2>Walk Me Through It</h2>
-        <p className="lede">Solve one question in eight checked steps: what is asked, what is given, what the symbols mean, the problem type, the first step, the operation, what comes next, and the final answer. Wrong tries get progressive hints; you can always try again.</p>
+        <p className="lede">Solve one question in nine checked steps: what is asked, what is given, what the components mean, the problem type, the strategy, the operation, the calculation, the final answer, and whether a faster approach exists. Wrong tries get progressive hints; you can always try again.</p>
       </header>
       {qid && !q && <p className="empty">That question was not found. Choose one below.</p>}
       {q ? (

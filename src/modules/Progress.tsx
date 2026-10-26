@@ -77,7 +77,7 @@ export function Progress() {
             Try Speed Training
           </a>
         </div>
-        <BackupPanel />
+        <BackupPanel key="backup" />
       </div>
     );
   }
@@ -236,7 +236,7 @@ export function Progress() {
           Mistake Review Queue
         </a>
       </div>
-      <BackupPanel />
+      <BackupPanel key="backup" />
     </div>
   );
 }

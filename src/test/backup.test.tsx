@@ -134,3 +134,19 @@ describe('Backup panel', () => {
     click.mockRestore();
   });
 });
+
+describe('Restore on a fresh install', () => {
+  it('keeps the confirmation visible when the Progress page switches from empty to filled', async () => {
+    const { Progress } = await import('../modules/Progress');
+    const user = userEvent.setup();
+    seed();
+    const backup = exportProgress();
+    resetProgress();
+    render(<Progress />);
+    expect(screen.getByText(/No practice recorded yet/)).toBeInTheDocument();
+    await user.upload(screen.getByLabelText('Import Progress file'), file(backup));
+    await user.click(await screen.findByRole('button', { name: 'Replace my progress' }));
+    expect(screen.queryByText(/No practice recorded yet/)).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent('Progress restored: 4 attempts.');
+  });
+});
