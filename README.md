@@ -116,8 +116,36 @@ src/
 
 **Tests added:** `guides.test.ts` (structure, and every number a guide expects recomputed independently; mutation-checked), `guided.test.tsx` (step-by-step flow, hints, retries, Show Me, no future steps, trace contents, diagnosis rules, Review link), `qc.test.tsx` (each model agrees with the verified key over sampled allowed values; rejection; D proof; no “always” claims), `di.test.tsx`, `verifyDI.ts`, `verifyBank4.ts`, `calculator.test.tsx` (precedence, parentheses, 8 digits, errors, memory, transfer, keyboard, timed), `adaptive.test.tsx`, `nav.test.tsx`. Browser check at 375 px and 1280 px (light and dark): no horizontal overflow, console errors, or KaTeX errors on any new page.
 
-**Known gaps:** 10 questions per lesson is not reached (minimum is now 4). Basic guides are partly self-check. Charts scale down on phones (small text on the circle graph; the table view is the fallback). The adaptive routing is this app’s own rule.
+**Known gaps (at the end of Phase 3):** 10 questions per lesson is not reached (minimum is now 4). Basic guides are partly self-check. Charts scale down on phones (small text on the circle graph; the table view is the fallback). The adaptive routing is this app’s own rule. *(The first three are addressed in the learning-quality pass below.)*
+
+## Learning quality & coverage pass
+
+| Area | What changed |
+|---|---|
+| **Full walkthroughs for every question** | All **432** questions have a fully authored guide (no question falls back to the basic guide any more; the basic guide remains only as a safety fallback). The walkthrough now has **nine** graded steps: 1 what am I solving for, 2 what is given, 3 what the components mean, 4 problem type, 5 strategy / first step, 6 operation, 7 calculation and next step (one or more graded sub-steps), 8 final answer, 9 **Is there a faster valid approach?** (recorded as its own step; the explanation appears only after it). **92** guides offer both a shortcut track and a traditional track where they differ meaningfully. Choice steps accept equivalent options; numeric steps accept equivalent forms (fractions, decimals). Hints are progressive and every step that needed a hint or **Show Me** is recorded in the trace. |
+| **Bank: 10+ questions in every lesson** | **432** questions (+229 this pass): arithmetic 126, algebra 116, geometry 94, data 96; 141 foundation / 193 intermediate / 98 challenge; 251 numeric entry, 87 single-answer, 18 multi-answer, 76 QC. **All 55 lessons have at least 10 questions, and every lesson has all three difficulty levels.** New questions mix recognition-heavy, component-identification, strategy-selection, and full-solve items, with varied wording and structure. Each new question is written together with its guide and lesson links (`src/data/questions/b5/`), so a question can't ship without a walkthrough. |
+| **Verification** | Every new answer key is recomputed independently in `src/test/verifyB5/` (brute force where practical: enumerated dice/marbles/committees/permutations, shoelace areas, law-of-cosines angles, sampled QC domains, bisection for roots, simulated fill rates). Every number a guide asks for has an independent value in a step-check map, and the guide test fails on a missing or mismatched value. Multiple-choice keys must match exactly one choice by value. Distractors (“traps”) must be genuinely wrong. |
+| **Mobile Data Interpretation charts** | Charts are drawn at the width they actually occupy (one SVG unit = one CSS pixel), so text stays about 12 px on a 320 px phone instead of shrinking to 6–8 px. Bar labels rotate when they would collide. Line end-labels give way to the legend on narrow screens. Axes use 1/2/2.5/5 × 10ⁿ steps. The **circle graph** shows each percentage inside its slice and an HTML legend (name + percent, clockwise from the top) beside or below the pie, so no label is crowded at the rim. The table view is unchanged. Checked at 320, 375, 568, 900 and 1280 px: no horizontal page scroll. |
+| **Recognize deep link** | `#/recognize?q=<id>` opens a specific question. |
+
+### Phase 5 audit (report only — nothing implemented)
+
+| Feature | Status | Evidence |
+|---|---|---|
+| Adaptive recommendations | **Partial** | `weakAreas` ranks topics from recorded attempts and links each to an activity; mistake-type recommendations; *Practice What I Need* builds a 5-item session from the weakest topics. No difficulty adaptation inside practice, and no learning paths. |
+| Daily study plans | **Missing** | No daily plan or schedule. |
+| Spaced repetition | **Partial** | Flashcards track knew / missed / streak and show *need practice / known / unseen*; decks serve unseen, then least recently seen; the Review Queue keeps full history. No due dates or interval scheduling. |
+| Similar-question generation | **Partial** | *Try a similar question* picks another verified bank question on the same concept (`similarTo`). Templated generation exists only for quadratic decode drills. No new verified questions are generated. |
+| Skill mastery tracking | **Partial** | Per-topic accuracy for recognition, components, strategy and solving (`#/progress`); lesson status (*Not started / In progress / Checks passed*) from recorded attempts. No mastery levels or thresholds. |
+| Personalized shortcut recommendations | **Partial** | After timed sets, *Where Could I Have Saved Time?* lists slow questions that have a shortcut; *See a Faster Method* and *Practice This Shortcut* appear after misses. No profile-level shortcut suggestions. |
+| Weekly summaries | **Missing** | Progress has a last-7-days filter, but no weekly summary. |
+| Study preferences | **Missing** | No settings for goals, test date, or preferred topics. |
+| Progress export | **Missing** | Progress lives only in `localStorage`. |
+
+**Compatibility:** no change to the saved-progress format (`gre.quant.progress.v1`). New questions have new ids; existing ids, attempts and guided traces load unchanged.
+
+**Limitations:** 340 guides have a single track, because for those questions the shortcut and the traditional method don't differ meaningfully. One near-duplicate pair predates this pass (`b4-cube-surface` and `b3-cube-sa`: both go from a cube's volume of 64 to its surface area of 96). It was left in place so existing study history isn't affected. The adaptive timed routing is still this app's own rule.
 
 ## Remaining phases
 
-- **Phase 5:** Spaced review, adaptive recommendations, expanded problem generation from verified templates, learning paths, and more questions per lesson.
+- **Phase 5:** See the audit above for what exists today. Remaining: due-date spaced review, daily plans, weekly summaries, study preferences, progress export, template-based generation of verified questions, and learning paths.
